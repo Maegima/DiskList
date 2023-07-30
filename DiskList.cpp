@@ -2,6 +2,8 @@
  * @file DiskList.cpp
  * @author André Lucas Maegima
  * @brief Folder listing program with md5 checksum.
+ * @version 0.1
+ * @date 2023-07-30
  * 
  * @copyright Copyright (c) 2023
  * 
