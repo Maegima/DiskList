@@ -12,18 +12,14 @@
 #ifndef GTKMM_MAINWINDOW_H_
 #define GTKMM_MAINWINDOW_H_
 
-#include <list>
 #include <gtkmm.h>
-#include "FileInfo.hpp"
 
 class MainWindow : public Gtk::ApplicationWindow {
    public:
-    std::list<FileInfo> entries;
     MainWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refBuilder);
 
-    static MainWindow *create();
-
     void open_file_view(const Glib::RefPtr<Gio::File> &file);
+    void add_entry(const std::string &filename, const Glib::ustring &description);
 
    protected:
     class ModelColumns;
@@ -35,7 +31,6 @@ class MainWindow : public Gtk::ApplicationWindow {
     void on_bind_listitem(const Glib::RefPtr<Gtk::ListItem> &list_item);
     int on_model_sort(const Glib::RefPtr<const ModelColumns> &a, const Glib::RefPtr<const ModelColumns> &b);
 
-    void add_entry(const std::string &filename, const Glib::ustring &description);
 
     // A Gio::ListStore stores filename, description and texture.
     class ModelColumns : public Glib::Object {

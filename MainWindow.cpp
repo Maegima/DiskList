@@ -48,35 +48,6 @@ MainWindow::MainWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder>
         sigc::mem_fun(*this, &MainWindow::on_model_sort));
 }
 
-std::list<FileInfo> getFileInfoList(std::filesystem::path path) {
-    std::list<FileInfo> fileList;
-    for (auto const &entry : std::filesystem::directory_iterator{path}) {
-        FileInfo fileInfo = FileInfo(entry);
-        fileList.push_back(fileInfo);
-        if (fileInfo.type == FileType::Directory) {
-            std::list<FileInfo> dirList = getFileInfoList(entry.path());
-            fileList.splice(fileList.end(), dirList);
-        }
-    }
-    return fileList;
-}
-
-// static
-MainWindow *MainWindow::create() {
-    // Load the Builder file and instantiate its widgets.
-    auto refBuilder = Gtk::Builder::create_from_resource("/resources/disklist/window.ui");
-
-    auto window = Gtk::Builder::get_widget_derived<MainWindow>(refBuilder, "app_window");
-    if (!window) throw std::runtime_error("No \"app_window\" object in window.ui");
-    window->entries = std::list<FileInfo>();
-    std::filesystem::path current_path = std::filesystem::current_path();
-
-    window->entries = getFileInfoList(current_path);
-    for (const auto &entry : window->entries) window->add_entry(entry.path, entry.md5sumString());
-
-    return window;
-}
-
 void MainWindow::open_file_view(const Glib::RefPtr<Gio::File> & /* file */) {}
 
 void MainWindow::on_setup_listitem(const Glib::RefPtr<Gtk::ListItem> &list_item) {
