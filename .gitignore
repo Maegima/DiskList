@@ -4,6 +4,8 @@ md5/*
 .test/*
 .vscode/*
 
+*.cmb
+
 # Prerequisites
 *.d
 
@@ -36,3 +38,9 @@ md5/*
 *.exe
 *.out
 *.app
+
+# Auto generated resources code file
+resources.c
+
+# Doxygen version control files
+*.ddh
