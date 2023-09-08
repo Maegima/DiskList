@@ -2,8 +2,8 @@
  * @file FileInfo.hpp
  * @author André Lucas Maegima
  * @brief Class to extract file infomations.
- * @version 0.1
- * @date 2023-07-30
+ * @version 0.2
+ * @date 2023-09-08
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -19,17 +19,18 @@ enum FileType {Directory, File};
 
 class FileInfo {
 private:
-    std::string path;
     off_t size;
     long created;
     long modified;
     long accessed;
     uint8_t* md5sum;
 public:
+    std::string path;
     FileType type;
     FileInfo(std::filesystem::directory_entry entry);
     std::string size_to_string(size_t size) const;
     std::string to_string() const; 
+    std::string md5sumString() const;
 };
 
 std::ostream& operator<<(std::ostream& os, const FileInfo& file);

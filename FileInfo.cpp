@@ -2,8 +2,8 @@
  * @file FileInfo.cpp
  * @author André Lucas Maegima
  * @brief Class to extract file infomations.
- * @version 0.1
- * @date 2023-07-30
+ * @version 0.2
+ * @date 2023-09-08
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -55,12 +55,16 @@ string FileInfo::size_to_string(size_t size) const{
     return ss.str();
 }
 
-string FileInfo::to_string() const {
+string FileInfo::md5sumString() const {
     std::stringstream ss;
     for(int i=0; i<16; ++i)
         ss << setfill('0') << setw(2) << std::hex << (int)md5sum[i];
+    return ss.str();
+}
+
+string FileInfo::to_string() const {
     return std::to_string(type) + " " + std::to_string(created) + " " + std::to_string(modified) + " " + std::to_string(accessed) +
-    " " + ss.str() + " " + size_to_string(size) + " " + path;
+    " " + md5sumString() + " " + size_to_string(size) + " " + path;
 }
 
 ostream& operator<<(ostream& os, const FileInfo& file){
