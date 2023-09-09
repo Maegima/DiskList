@@ -1,9 +1,9 @@
 OBJDIR=obj
 BINDIR=bin
 CC = g++
-CFLAGS = -Wall -g `pkg-config --cflags --libs gtkmm-4.0`
+CFLAGS = -Wall -g `pkg-config --cflags --libs gtkmm-4.0` -I./Application
 
-SOBJS=resources.o DiskList.o Application.o MainWindow.o FileInfo.o md5.o
+SOBJS=resources.o DiskList.o Application.o MainWindow.o GridViewImage.o FileInfo.o md5.o
 
 OBJS=$(SOBJS:%=$(OBJDIR)/%)
 

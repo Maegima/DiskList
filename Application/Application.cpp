@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief GTKMM Application override implementations
  * @version 0.2
- * @date 2023-09-08
+ * @date 2023-09-09
  *
  * @copyright Copyright (c) 2023
  *
@@ -13,7 +13,6 @@
 #include <iostream>
 #include <exception>
 #include "Application.h"
-#include "Controllers/FileInfo.hpp"
 #include "Windows/MainWindow.h"
 
 Application::Application() : Gtk::Application("disklist.application", Gio::Application::Flags::HANDLES_OPEN) {}
@@ -22,29 +21,8 @@ Glib::RefPtr<Application> Application::create() {
     return Glib::make_refptr_for_instance<Application>(new Application());
 }
 
-std::list<FileInfo> getFileInfoList(std::filesystem::path path) {
-    std::list<FileInfo> fileList;
-    for (auto const &entry : std::filesystem::directory_iterator{path}) {
-        FileInfo fileInfo = FileInfo(entry);
-        fileList.push_back(fileInfo);
-        if (fileInfo.type == FileType::Directory) {
-            std::list<FileInfo> dirList = getFileInfoList(entry.path());
-            fileList.splice(fileList.end(), dirList);
-        }
-    }
-    return fileList;
-}
-
 MainWindow* Application::create_appwindow() {
-    auto refBuilder = Gtk::Builder::create_from_resource("/resources/disklist/window.ui");
-
-    auto appwindow = Gtk::Builder::get_widget_derived<MainWindow>(refBuilder, "app_window");
-    if (!appwindow) 
-        throw std::runtime_error("No \"app_window\" object in window.ui");
-
-    auto entries = getFileInfoList(std::filesystem::current_path());
-    for (const auto &entry : entries) 
-        appwindow->add_entry(entry.path, entry.md5sumString());
+    auto appwindow = MainWindow::create();
 
     // Make sure that the application runs for as long this window is still
     // open.
