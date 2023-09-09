@@ -12,9 +12,9 @@
 #include <list>
 #include <iostream>
 #include <exception>
-#include "FileInfo.hpp"
 #include "Application.h"
-#include "MainWindow.h"
+#include "Controllers/FileInfo.hpp"
+#include "Windows/MainWindow.h"
 
 Application::Application() : Gtk::Application("disklist.application", Gio::Application::Flags::HANDLES_OPEN) {}
 
