@@ -3,14 +3,14 @@
  * @author André Lucas Maegima
  * @brief GridViewImage class implementation
  * @version 0.2
- * @date 2023-09-09
+ * @date 2023-09-10
  * 
  * @copyright Copyright (c) 2023
  * 
  */
 
 #include <iostream>
-#include "GridViewImage.h"
+#include "GridViewImage.hpp"
 
 GridViewImage::GridViewImage(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refBuilder)
     : Gtk::GridView(cobject) {

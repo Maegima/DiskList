@@ -3,13 +3,13 @@
  * @author André Lucas Maegima
  * @brief Folder listing program with md5 checksum.
  * @version 0.2
- * @date 2023-09-08
+ * @date 2023-09-10
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#include "Application.h"
+#include "Application.hpp"
 
 int main(int argc, char* argv[]) {
     auto application = Application::create();

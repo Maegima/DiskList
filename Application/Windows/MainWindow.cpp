@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include <stdexcept>
-#include "MainWindow.h"
+#include "MainWindow.hpp"
 #include "Controllers/FileInfo.hpp"
 
 std::list<FileInfo> getFileInfoList(std::filesystem::path path) {

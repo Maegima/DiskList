@@ -1,19 +1,19 @@
 /**
- * @file MainWindow.h
+ * @file MainWindow.hpp
  * @author André Lucas Maegima
  * @brief Disklist Main Window Definitions
  * @version 0.2
- * @date 2023-09-09
+ * @date 2023-09-10
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#ifndef GTKMM_MAINWINDOW_H_
-#define GTKMM_MAINWINDOW_H_
+#ifndef GTKMM_MAINWINDOW_HPP_
+#define GTKMM_MAINWINDOW_HPP_
 
 #include <gtkmm.h>
-#include "GridViewImage.h"
+#include "GridViewImage.hpp"
 
 class MainWindow : public Gtk::ApplicationWindow {
    public:
@@ -27,4 +27,4 @@ class MainWindow : public Gtk::ApplicationWindow {
     Glib::RefPtr<Gtk::Builder> m_refBuilder;
 };
 
-#endif /* GTKMM_MAINWINDOW_H_ */
+#endif /* GTKMM_MAINWINDOW_HPP_ */

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief GTKMM Application override implementations
  * @version 0.2
- * @date 2023-09-09
+ * @date 2023-09-10
  *
  * @copyright Copyright (c) 2023
  *
@@ -12,8 +12,8 @@
 #include <list>
 #include <iostream>
 #include <exception>
-#include "Application.h"
-#include "Windows/MainWindow.h"
+#include "Application.hpp"
+#include "Windows/MainWindow.hpp"
 
 Application::Application() : Gtk::Application("disklist.application", Gio::Application::Flags::HANDLES_OPEN) {}
 

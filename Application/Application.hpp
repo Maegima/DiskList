@@ -1,5 +1,5 @@
 /**
- * @file Application.h
+ * @file Application.hpp
  * @author André Lucas Maegima
  * @brief GTKMM Application override definitions
  * @version 0.2
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef GTKMM_APPLICATION_H
-#define GTKMM_APPLICATION_H
+#ifndef GTKMM_APPLICATION_HPP
+#define GTKMM_APPLICATION_HPP
 
 #include <gtkmm.h>
 
@@ -32,4 +32,4 @@ class Application : public Gtk::Application {
     MainWindow* create_appwindow();
 };
 
-#endif /* GTKMM_APPLICATION_H */
+#endif /* GTKMM_APPLICATION_HPP */

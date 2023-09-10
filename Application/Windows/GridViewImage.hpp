@@ -1,16 +1,16 @@
 /**
- * @file GridViewImage.h
+ * @file GridViewImage.hpp
  * @author André Lucas Maegima
  * @brief GridViewImage class definition
  * @version 0.2
- * @date 2023-09-09
+ * @date 2023-09-10
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#ifndef GTKMM_GRIDVIEWIMAGE_H_
-#define GTKMM_GRIDVIEWIMAGE_H_
+#ifndef GTKMM_GRIDVIEWIMAGE_HPP_
+#define GTKMM_GRIDVIEWIMAGE_HPP_
 
 #include <gtkmm.h>
 
@@ -48,4 +48,4 @@ class GridViewImage : public Gtk::GridView {
                       const Glib::RefPtr<const ModelColumns> &b);
 };
 
-#endif /* GTKMM_GRIDVIEWIMAGE_H_ */
+#endif /* GTKMM_GRIDVIEWIMAGE_HPP_ */
