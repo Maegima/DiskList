@@ -48,12 +48,56 @@
           <object class="GtkSeparator"/>
         </child>
         <child>
-          <object class="GtkGridView">
-            <property name="width-request">200</property>
+          <object class="GtkBox" id="info_box">
+            <property name="margin-top">5</property>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="hexpand">True</property>
+                <property name="hexpand-set">True</property>
+                <property name="vexpand-set">True</property>
+                <property name="width-request">250</property>
+                <child>
+                  <object class="GtkColumnView" id="info">
+                    <property name="model">
+                      <object class="GtkSingleSelection">
+                        <property name="autoselect">False</property>
+                        <property name="can-unselect">True</property>
+                        <property name="model">
+                          <object class="GListStore">
+                            <property name="item-type">PropertyInfo</property>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                    <child>
+                      <object class="GtkColumnViewColumn">
+                        <property name="factory">
+                          <object class="GtkSignalListItemFactory"/>
+                        </property>
+                        <property name="sorter">
+                          <object class="GtkStringSorter"/>
+                        </property>
+                        <property name="title">Property</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkColumnViewColumn">
+                        <property name="factory">
+                          <object class="GtkSignalListItemFactory"/>
+                        </property>
+                        <property name="sorter">
+                          <object class="GtkStringSorter"/>
+                        </property>
+                        <property name="title">Value</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
     </child>
   </object>
-  <object class="GtkSignalListItemFactory"/>
 </interface>

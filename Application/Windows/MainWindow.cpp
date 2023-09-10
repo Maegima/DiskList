@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include "MainWindow.hpp"
 #include "Controllers/FileInfo.hpp"
+#include "ColumnViewInfo.hpp"
 
 std::list<FileInfo> getFileInfoList(std::filesystem::path path) {
     std::list<FileInfo> fileList;
@@ -36,6 +37,8 @@ MainWindow::MainWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder>
     auto entries = getFileInfoList(std::filesystem::current_path());
     for (const auto &entry : entries) 
         grid_view->add_entry(entry.path.string(), entry.path.filename().string());
+
+    Gtk::Builder::get_widget_derived<ColumnViewInfo>(refBuilder, "info");
 }
 
 void MainWindow::open_file_view(const Glib::RefPtr<Gio::File> & /* file */) {}
