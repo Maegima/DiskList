@@ -35,5 +35,5 @@ RESOURCES:
 	glib-compile-resources --target=Application/resources.c --generate-source Application/application.gresource.xml
 
 MD5PROJ:
-	[ -d "md5" ] || git clone https://github.com/Maegima/md5.git
-	cd md5 && git pull
+	cd Application/Controllers && [ -d "md5" ] || git clone https://github.com/Maegima/md5.git
+	cd Application/Controllers/md5 && git pull
