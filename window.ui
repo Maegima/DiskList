@@ -26,6 +26,8 @@
                   <object class="GtkSignalListItemFactory" id="factory"/>
                 </property>
                 <property name="hexpand">True</property>
+                <property name="max-columns">9</property>
+                <property name="min-columns">5</property>
                 <property name="model">
                   <object class="GtkSingleSelection" id="model">
                     <property name="autoselect">False</property>

@@ -78,7 +78,12 @@ void GridViewImage::on_listitem_setup(const Glib::RefPtr<Gtk::ListItem>& list_it
     picture->set_halign(Gtk::Align::CENTER);
     picture->set_valign(Gtk::Align::END);
     vBox->append(*picture);
-    vBox->append(*Gtk::make_managed<Gtk::Label>());
+    auto label = Gtk::make_managed<Gtk::Label>();
+    label->set_wrap(true);
+    label->set_wrap_mode(Pango::WrapMode::CHAR);
+    label->set_max_width_chars(15);
+    label->set_width_chars(12);
+    vBox->append(*label);
     list_item->set_child(*vBox);
 }
 
