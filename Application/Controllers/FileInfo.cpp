@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Class to extract file infomations.
  * @version 0.2
- * @date 2023-09-08
+ * @date 2023-09-10
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -16,7 +16,7 @@
 #include "FileInfo.hpp"
 
 FileInfo::FileInfo(filesystem::directory_entry entry){
-    path = entry.path().string();
+    path = entry.path();
     struct stat f_stat;
     stat(path.c_str(), &f_stat);
     type = S_ISDIR(f_stat.st_mode) ? FileType::Directory : FileType::File;
@@ -64,7 +64,7 @@ string FileInfo::md5sumString() const {
 
 string FileInfo::to_string() const {
     return std::to_string(type) + " " + std::to_string(created) + " " + std::to_string(modified) + " " + std::to_string(accessed) +
-    " " + md5sumString() + " " + size_to_string(size) + " " + path;
+    " " + md5sumString() + " " + size_to_string(size) + " " + path.string();
 }
 
 ostream& operator<<(ostream& os, const FileInfo& file){

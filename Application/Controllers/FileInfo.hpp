@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Class to extract file infomations.
  * @version 0.2
- * @date 2023-09-08
+ * @date 2023-09-10
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -25,7 +25,7 @@ private:
     long accessed;
     uint8_t* md5sum;
 public:
-    std::string path;
+    std::filesystem::path path;
     FileType type;
     FileInfo(std::filesystem::directory_entry entry);
     std::string size_to_string(size_t size) const;

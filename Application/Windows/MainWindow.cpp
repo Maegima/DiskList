@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Disklist Main Window Implementations
  * @version 0.2
- * @date 2023-09-09
+ * @date 2023-09-10
  *
  * @copyright Copyright (c) 2023
  *
@@ -35,7 +35,7 @@ MainWindow::MainWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder>
     
     auto entries = getFileInfoList(std::filesystem::current_path());
     for (const auto &entry : entries) 
-        grid_view->add_entry(entry.path, entry.md5sumString());
+        grid_view->add_entry(entry.path.string(), entry.path.filename().string());
 }
 
 void MainWindow::open_file_view(const Glib::RefPtr<Gio::File> & /* file */) {}
