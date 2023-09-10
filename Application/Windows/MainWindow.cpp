@@ -41,7 +41,7 @@ MainWindow::MainWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder>
 void MainWindow::open_file_view(const Glib::RefPtr<Gio::File> & /* file */) {}
 
 MainWindow* MainWindow::create() {
-    auto refBuilder = Gtk::Builder::create_from_resource("/resources/disklist/window.ui");
+    auto refBuilder = Gtk::Builder::create_from_resource("/resources/disklist/Application/Windows/window.ui");
 
     auto window = Gtk::Builder::get_widget_derived<MainWindow>(refBuilder, "app_window");
     if (!window) 
