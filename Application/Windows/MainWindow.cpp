@@ -52,6 +52,9 @@ MainWindow::MainWindow(SDL_Window *window) : window(window) {
                 done = true;
         }
 
+        int x, y;
+        SDL_GetWindowSize(window, &x, &y);
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
@@ -59,23 +62,16 @@ MainWindow::MainWindow(SDL_Window *window) : window(window) {
         ImGui::ShowDemoWindow();
 
         ImGui::Begin("Show files!", (bool*)__null, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_HorizontalScrollbar);                          // Create a window called "Hello, world!" and append into it.
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 8));
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 8));
-        int x, y;
-        SDL_GetWindowSize(window, &x, &y);
-        ImGui::SetWindowSize(ImVec2(816, 600), 0);
+        ImGui::SetWindowSize(ImVec2(840, 600), 0);
 
-        //ImGui::SetNextItemWidth(400);
         int count = 0;
         for (auto const &entry : std::filesystem::directory_iterator{current_folder}) {
             //getFileInfoList(entry);
             ImGui::BeginGroup();
             TextCentered(entry.path().filename());
-            //ImGui::SetWindowSize(ImVec2(200, 600), 0);
-            ImGui::PushTextWrapPos((count % 4)*200 + 200);
+            ImGui::PushTextWrapPos((count % 4)*208 + 208);
             ImGui::TextWrapped(entry.path().c_str());
             ImGui::PopTextWrapPos();
-            //ImGui::SetWindowSize(ImVec2(800, 600), 0);
             ImGui::EndGroup();
             if(ImGui::IsItemClicked()){
                 std::cout << "item clicked entry " << entry.path() << std::endl;
@@ -87,8 +83,6 @@ MainWindow::MainWindow(SDL_Window *window) : window(window) {
 
         ImGuiIO& io = ImGui::GetIO();
         ImGui::TextWrapped("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        ImGui::PopStyleVar();
-        ImGui::PopStyleVar();
         ImGui::End();
 
 
