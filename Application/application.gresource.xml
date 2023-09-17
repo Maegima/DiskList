@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<gresources>
-  <gresource prefix="/resources/disklist">
-    <file preprocess="xml-stripblanks">Application/Windows/window.ui</file>
-  </gresource>
-</gresources>

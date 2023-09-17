@@ -3,52 +3,101 @@
  * @author André Lucas Maegima
  * @brief Disklist Main Window Implementations
  * @version 0.2
- * @date 2023-09-10
+ * @date 2023-09-17
  *
  * @copyright Copyright (c) 2023
  *
  */
 
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_opengl3.h>
+#include <filesystem>
 #include <iostream>
-#include <stdexcept>
 #include "MainWindow.hpp"
-#include "Controllers/FileInfo.hpp"
-#include "ColumnViewInfo.hpp"
 
-std::list<FileInfo> getFileInfoList(std::filesystem::path path) {
-    std::list<FileInfo> fileList;
-    for (auto const &entry : std::filesystem::directory_iterator{path}) {
-        FileInfo fileInfo = FileInfo(entry);
-        fileList.push_back(fileInfo);
-        if (fileInfo.type == FileType::Directory) {
-            std::list<FileInfo> dirList = getFileInfoList(entry.path());
-            fileList.splice(fileList.end(), dirList);
+void getFileInfoList(std::filesystem::directory_entry ent) {
+    if (ent.is_directory()) {
+        if(ImGui::TreeNode(ent.path().filename().c_str())){
+            for (auto const &entry : std::filesystem::directory_iterator{ent.path()}) {
+                getFileInfoList(entry);
+            }
+            ImGui::TreePop();
         }
+    } else {
+        ImGui::BulletText(ent.path().filename().c_str());    
     }
-    return fileList;
 }
 
-MainWindow::MainWindow(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refBuilder)
-    : Gtk::ApplicationWindow(cobject), m_refBuilder(refBuilder) {
-    grid_view = Gtk::Builder::get_widget_derived<GridViewImage>(refBuilder, "grid");
-    if (!grid_view) 
-        throw std::runtime_error("No \"grid\" object in window.ui");
-    
-    auto entries = getFileInfoList(std::filesystem::current_path());
-    for (const auto &entry : entries) 
-        grid_view->add_entry(entry.path.string(), entry.path.filename().string());
-
-    Gtk::Builder::get_widget_derived<ColumnViewInfo>(refBuilder, "info");
+void TextCentered(std::string text) {
+    bool t;
+    ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+    ImGui::Selectable(text.c_str(), &t, 0, ImVec2(200, 15));
+    ImGui::PopStyleVar();
 }
 
-void MainWindow::open_file_view(const Glib::RefPtr<Gio::File> & /* file */) {}
+MainWindow::MainWindow(SDL_Window *window) : window(window) {
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    bool done = false;
 
-MainWindow* MainWindow::create() {
-    auto refBuilder = Gtk::Builder::create_from_resource("/resources/disklist/Application/Windows/window.ui");
+    std::filesystem::path current_folder = std::filesystem::current_path();
 
-    auto window = Gtk::Builder::get_widget_derived<MainWindow>(refBuilder, "app_window");
-    if (!window) 
-        throw std::runtime_error("No \"app_window\" object in window.ui");
-    
-    return window;
+    while (!done) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+            if (event.type == SDL_QUIT)
+                done = true;
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+                done = true;
+        }
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::ShowDemoWindow();
+
+        ImGui::Begin("Show files!", (bool*)__null, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_HorizontalScrollbar);                          // Create a window called "Hello, world!" and append into it.
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 8));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 8));
+        int x, y;
+        SDL_GetWindowSize(window, &x, &y);
+        ImGui::SetWindowSize(ImVec2(816, 600), 0);
+
+        //ImGui::SetNextItemWidth(400);
+        int count = 0;
+        for (auto const &entry : std::filesystem::directory_iterator{current_folder}) {
+            //getFileInfoList(entry);
+            ImGui::BeginGroup();
+            TextCentered(entry.path().filename());
+            //ImGui::SetWindowSize(ImVec2(200, 600), 0);
+            ImGui::PushTextWrapPos((count % 4)*200 + 200);
+            ImGui::TextWrapped(entry.path().c_str());
+            ImGui::PopTextWrapPos();
+            //ImGui::SetWindowSize(ImVec2(800, 600), 0);
+            ImGui::EndGroup();
+            if(ImGui::IsItemClicked()){
+                std::cout << "item clicked entry " << entry.path() << std::endl;
+            }
+            if(++count % 4 != 0){
+                ImGui::SameLine();
+            }
+        }
+
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::TextWrapped("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::PopStyleVar();
+        ImGui::PopStyleVar();
+        ImGui::End();
+
+
+        // Rendering
+        ImGui::Render();
+        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        SDL_GL_SwapWindow(window);
+    }
 }

@@ -1,77 +1,85 @@
 /**
  * @file Application.cpp
  * @author André Lucas Maegima
- * @brief GTKMM Application override implementations
+ * @brief Disklist Application override implementations
  * @version 0.2
- * @date 2023-09-10
+ * @date 2023-09-13
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#include <list>
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_opengl3.h>
 #include <iostream>
 #include <exception>
 #include "Application.hpp"
-#include "Windows/MainWindow.hpp"
 
-Application::Application() : Gtk::Application("disklist.application", Gio::Application::Flags::HANDLES_OPEN) {}
-
-Glib::RefPtr<Application> Application::create() {
-    return Glib::make_refptr_for_instance<Application>(new Application());
+Application::Application() {
+    SetupSDL();
+    SetupImGui();
 }
 
-MainWindow* Application::create_appwindow() {
-    auto appwindow = MainWindow::create();
-
-    // Make sure that the application runs for as long this window is still
-    // open.
-    add_window(*appwindow);
-
-    // A window can be added to an application with
-    // Gtk::Application::add_window() or Gtk::Window::set_application(). When
-    // all added windows have been hidden or removed, the application stops
-    // running (Gtk::Application::run() returns()), unless
-    // Gio::Application::hold() has been called.
-
-    // Delete the window when it is hidden.
-    appwindow->signal_hide().connect([appwindow]() { delete appwindow; });
-
-    return appwindow;
+Application::~Application() {
+    DestroyImGui();
+    DestroySDL();
 }
 
-void Application::on_activate() {
-    try {
-        // The application has been started, so let's show a window.
-        auto appwindow = create_appwindow();
-        appwindow->present();
+void Application::SetupSDL() {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+        throw std::runtime_error(SDL_GetError());
     }
-    // If create_appwindow() throws an exception (perhaps from Gtk::Builder),
-    // no window has been created, no window has been added to the application,
-    // and therefore the application will stop running.
-    catch (const Glib::Error& ex) {
-        std::cerr << "Application::on_activate(): " << ex.what() << std::endl;
-    } catch (const std::exception& ex) {
-        std::cerr << "Application::on_activate(): " << ex.what() << std::endl;
-    }
+    // GL 3.0 + GLSL 130
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+    // From 2.0.18: Enable native IME.
+    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+    
+    // Create window with graphics context
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 }
 
-void Application::on_open(const Gio::Application::type_vec_files& files, const Glib::ustring& /* hint */) {
-    // The application has been asked to open some files,
-    // so let's open a new view for each one.
-    MainWindow* appwindow = nullptr;
-    auto windows = get_windows();
-    if (windows.size() > 0) appwindow = dynamic_cast<MainWindow*>(windows[0]);
+void Application::CreateWindow() {
+    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL3 example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+}
 
-    try {
-        if (!appwindow) appwindow = create_appwindow();
+void Application::CreateContext() {
+    gl_context = SDL_GL_CreateContext(window);
+    SDL_GL_MakeCurrent(window, gl_context);
+    SDL_GL_SetSwapInterval(1);  // Enable vsync
+}
 
-        for (const auto& file : files) appwindow->open_file_view(file);
+void Application::SetupImGui() {
+    CreateWindow();
+    CreateContext();
+    
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+    io.IniFilename = nullptr;
+    ImGui::StyleColorsDark();
 
-        appwindow->present();
-    } catch (const Glib::Error& ex) {
-        std::cerr << "Application::on_open(): " << ex.what() << std::endl;
-    } catch (const std::exception& ex) {
-        std::cerr << "Application::on_open(): " << ex.what() << std::endl;
-    }
+    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+}
+
+void Application::DestroySDL() {
+    SDL_GL_DeleteContext(gl_context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
+void Application::DestroyImGui() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
 }

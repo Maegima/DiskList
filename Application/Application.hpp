@@ -1,35 +1,35 @@
 /**
  * @file Application.hpp
  * @author André Lucas Maegima
- * @brief GTKMM Application override definitions
+ * @brief Disklist Application definitions
  * @version 0.2
- * @date 2023-09-08
+ * @date 2023-09-13
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#ifndef GTKMM_APPLICATION_HPP
-#define GTKMM_APPLICATION_HPP
+#ifndef DISKLIST_APPLICATION_HPP
+#define DISKLIST_APPLICATION_HPP
 
-#include <gtkmm.h>
+#include <SDL.h>
+#include <SDL_opengl.h>
 
-class MainWindow;
-
-class Application : public Gtk::Application {
+class Application {
    protected:
-    Application();
+    const char* glsl_version = "#version 130";
+    SDL_GLContext gl_context;
+    void SetupSDL();
+    void CreateWindow();
+    void CreateContext();
+    void SetupImGui();
+    void DestroySDL();
+    void DestroyImGui();
 
    public:
-    static Glib::RefPtr<Application> create();
-
-   protected:
-    // Override default signal handlers:
-    void on_activate() override;
-    void on_open(const Gio::Application::type_vec_files& files, const Glib::ustring& hint) override;
-
-   private:
-    MainWindow* create_appwindow();
+    SDL_Window *window;
+    Application();
+    ~Application();
 };
 
-#endif /* GTKMM_APPLICATION_HPP */
+#endif /* DISKLIST_APPLICATION_HPP */
