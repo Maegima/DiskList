@@ -5,7 +5,7 @@ EXECUTABLE = $(BINDIR)/disklist
 
 OBJS_FILES = imgui.o imgui_demo.o imgui_draw.o imgui_tables.o imgui_widgets.o
 OBJS_FILES += imgui_impl_sdl2.o imgui_impl_opengl3.o
-OBJS_FILES += DiskList.o Application.o MainWindow.o
+OBJS_FILES += DiskList.o Application.o MainWindow.o Image.o
 OBJS=$(OBJS_FILES:%=$(OBJDIR)/%)
 
 CXX = g++
@@ -67,6 +67,9 @@ $(OBJDIR)/%.o: Application/%.cpp $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: Application/Windows/%.cpp $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: Application/Controllers/%.cpp $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(IMGUIDIR)/%.cpp $(OBJDIR)

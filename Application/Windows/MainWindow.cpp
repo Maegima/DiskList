@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Disklist Main Window Implementations
  * @version 0.2
- * @date 2023-09-17
+ * @date 2023-09-19
  *
  * @copyright Copyright (c) 2023
  *
@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <iostream>
 #include "MainWindow.hpp"
+#include "Controllers/Image.hpp"
 
 void getFileInfoList(std::filesystem::directory_entry ent) {
     if (ent.is_directory()) {
@@ -43,6 +44,8 @@ MainWindow::MainWindow(SDL_Window *window) : window(window) {
     bool done = false;
 
     std::filesystem::path current_folder = std::filesystem::current_path();
+
+    Image img = Image(".images/folder-green.png");
 
     while (!done) {
         SDL_Event event;
@@ -77,6 +80,9 @@ MainWindow::MainWindow(SDL_Window *window) : window(window) {
             ImGui::PushTextWrapPos((count % 4)*208 + 208);
             ImGui::TextWrapped(entry.path().c_str());
             ImGui::PopTextWrapPos();
+            ImGui::Text("pointer = %p", img.GetTexture());
+            ImGui::Text("size = %d x %d", img.width, img.height);
+            ImGui::Image(img.GetTexture(), ImVec2(img.width, img.height));
             ImGui::EndGroup();
             if(entry.is_directory() && ImGui::IsItemClicked()){
                 current_folder = entry.path();
