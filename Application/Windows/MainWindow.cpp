@@ -29,10 +29,12 @@ void getFileInfoList(std::filesystem::directory_entry ent) {
     }
 }
 
-void TextCentered(std::string text) {
+void TextCentered(std::string text, ImVec4 color = ImVec4(1, 1, 1, 1)) {
     bool t;
     ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_Text, color);
     ImGui::Selectable(text.c_str(), &t, 0, ImVec2(200, 15));
+    ImGui::PopStyleColor();
     ImGui::PopStyleVar();
 }
 
@@ -68,17 +70,23 @@ MainWindow::MainWindow(SDL_Window *window) : window(window) {
         for (auto const &entry : std::filesystem::directory_iterator{current_folder}) {
             //getFileInfoList(entry);
             ImGui::BeginGroup();
-            TextCentered(entry.path().filename());
+            if(entry.is_directory())
+                TextCentered(entry.path().filename(), ImVec4(0.20f, 1.0f, 1.0f, 1.0f));
+            else
+                TextCentered(entry.path().filename());
             ImGui::PushTextWrapPos((count % 4)*208 + 208);
             ImGui::TextWrapped(entry.path().c_str());
             ImGui::PopTextWrapPos();
             ImGui::EndGroup();
-            if(ImGui::IsItemClicked()){
-                std::cout << "item clicked entry " << entry.path() << std::endl;
+            if(entry.is_directory() && ImGui::IsItemClicked()){
+                current_folder = entry.path();
             }
             if(++count % 4 != 0){
                 ImGui::SameLine();
             }
+        }
+        if(ImGui::Button("Back")){
+            current_folder = current_folder.parent_path();
         }
 
         ImGuiIO& io = ImGui::GetIO();
