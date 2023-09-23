@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Image texture loader implementation
  * @version 0.2
- * @date 2023-09-19
+ * @date 2023-09-23
  *
  * @copyright Copyright (c) 2023
  *
@@ -14,6 +14,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include <iostream>
 
 Image::Image(const char* path) {
     unsigned char* image_data = stbi_load(path, &this->width, &this->height, NULL, 4);
@@ -38,7 +39,8 @@ Image::Image(const char* path) {
 
 Image::~Image() {
     // Delete a OpenGL texture identifier
-    glDeleteTextures(1, &this->texture);
+    if(this->texture)
+        glDeleteTextures(1, &this->texture);
 }
 
 void* Image::GetTexture() {

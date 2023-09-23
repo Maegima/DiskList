@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Image texture loader definition
  * @version 0.2
- * @date 2023-09-19
+ * @date 2023-09-23
  *
  * @copyright Copyright (c) 2023
  *
@@ -25,7 +25,7 @@ class Image {
     void* GetTexture();
 
    protected:
-    GLuint texture;
+    GLuint texture = 0;
 };
 
 #endif /* DISKLIST_IMAGE_HPP */
