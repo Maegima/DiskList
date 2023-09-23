@@ -14,7 +14,7 @@
 
 int main(int argc, char* argv[]) {
     auto app = Application();
-    auto mainWindow = MainWindow(app.window);
-    mainWindow.Loop();
+    auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    app.Run(new MainWindow("Disklist", 1280, 720, window_flags));
     return 0;
 }

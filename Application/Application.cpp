@@ -12,21 +12,10 @@
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
-#include <iostream>
 #include <exception>
 #include "Application.hpp"
 
-Application::Application() {
-    SetupSDL();
-    SetupImGui();
-}
-
-Application::~Application() {
-    DestroyImGui();
-    DestroySDL();
-}
-
-void Application::SetupSDL() {
+Application::Application(){
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
         throw std::runtime_error(SDL_GetError());
     }
@@ -45,41 +34,12 @@ void Application::SetupSDL() {
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 }
 
-void Application::CreateWindow() {
-    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    window = SDL_CreateWindow("Disklist", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
-}
-
-void Application::CreateContext() {
-    gl_context = SDL_GL_CreateContext(window);
-    SDL_GL_MakeCurrent(window, gl_context);
-    SDL_GL_SetSwapInterval(1);  // Enable vsync
-}
-
-void Application::SetupImGui() {
-    CreateWindow();
-    CreateContext();
-    
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    io.IniFilename = nullptr;
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-}
-
-void Application::DestroySDL() {
-    SDL_GL_DeleteContext(gl_context);
-    SDL_DestroyWindow(window);
+Application::~Application() {
+    this->window->~MainWindow();
     SDL_Quit();
 }
 
-void Application::DestroyImGui() {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
+void Application::Run(MainWindow *window){
+    this->window = window;
+    this->window->Loop();
 }

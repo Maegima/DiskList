@@ -12,12 +12,8 @@
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
-#include <filesystem>
-#include <list>
 #include <iostream>
 #include "MainWindow.hpp"
-#include "Controllers/Image.hpp"
-#include "Controllers/DirectoryEntry.hpp"
 
 void TextCentered(std::string text, ImVec4 color = ImVec4(1, 1, 1, 1)) {
     bool t;
@@ -28,13 +24,41 @@ void TextCentered(std::string text, ImVec4 color = ImVec4(1, 1, 1, 1)) {
     ImGui::PopStyleVar();
 }
 
-MainWindow::MainWindow(SDL_Window *window) : window(window) {
+MainWindow::MainWindow(const char *title, int width, int height, SDL_WindowFlags window_flags) {
+    this->window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, window_flags);
+    this->gl_context = SDL_GL_CreateContext(window);
+    SDL_GL_MakeCurrent(window, gl_context);
+    SDL_GL_SetSwapInterval(1);  // Enable vsync
+
+    // Setup ImGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    auto io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+    io.IniFilename = nullptr;
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplSDL2_InitForOpenGL(window, nullptr);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     DirectoryEntry::InitializeDefaultIcons(".conf");
 
     this->clear_color = new float[]{0.45f, 0.55f, 0.60f, 1.00f};
     this->done = false;
     this->current_folder = std::filesystem::current_path();
     this->LoadDirectoryEntries();
+}
+
+MainWindow::~MainWindow() {
+    // ShutDown ImGui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
+    // Destroy Window
+    SDL_GL_DeleteContext(this->gl_context);
+    SDL_DestroyWindow(this->window);
 }
 
 void MainWindow::ProcessEvent() {
@@ -102,8 +126,8 @@ void MainWindow::Loop() {
 void MainWindow::Render() {
     // Rendering
     ImGui::Render();
-    auto x = (GLsizei) ImGui::GetMainViewport()->Size.x;
-    auto y = (GLsizei) ImGui::GetMainViewport()->Size.y;
+    auto x = (GLsizei)ImGui::GetMainViewport()->Size.x;
+    auto y = (GLsizei)ImGui::GetMainViewport()->Size.y;
     glViewport(0, 0, x, y);
     glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
     glClear(GL_COLOR_BUFFER_BIT);

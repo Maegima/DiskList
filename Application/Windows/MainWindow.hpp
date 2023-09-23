@@ -20,15 +20,18 @@
 
 class MainWindow {
    public:
-    MainWindow(SDL_Window *window);
+    SDL_Window *window;
+    SDL_GLContext gl_context;
+    MainWindow(const char *title, int width, int height, SDL_WindowFlags window_flags);
+    ~MainWindow();
     void Loop();
 
    protected:
-    SDL_Window *window;
-    bool done;
+    const char *glsl_version = "#version 130";
     std::filesystem::path current_folder;
     std::list<DirectoryEntry*> *directory_entries;
     float *clear_color;
+    bool done;
 
     void ProcessEvent();
     void NewFrame();
