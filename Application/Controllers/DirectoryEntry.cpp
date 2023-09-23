@@ -25,7 +25,6 @@ DirectoryEntry::DirectoryEntry(std::filesystem::directory_entry entry) {
         this->img = default_icons.contains(ext) ? default_icons[ext] : default_icons["default"];
         if (ext == ".png" || ext == ".jpg") {
             this->loaded_img = new Image(entry.path().c_str());
-            //std::cout << entry.path().c_str() << " " << loaded_img->GetTexture() << " " << loaded_img->height << " " << loaded_img->width << std::endl;
             this->img = this->loaded_img;
         }
     }
@@ -48,7 +47,6 @@ void DirectoryEntry::InitializeDefaultIcons(const char* path) {
 }
 
 DirectoryEntry::~DirectoryEntry() {
-    std::cout << "data: " << this->loaded_img << " " << this->path.filename() << std::endl;
     if(this->loaded_img) 
         this->loaded_img->~Image();
 }

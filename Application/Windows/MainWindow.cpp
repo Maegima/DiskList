@@ -28,91 +28,101 @@ void TextCentered(std::string text, ImVec4 color = ImVec4(1, 1, 1, 1)) {
     ImGui::PopStyleVar();
 }
 
-std::list<DirectoryEntry*> *LoadEntries(std::filesystem::path path){
-    auto entries = new std::list<DirectoryEntry*>();
-    for (auto const &entry : std::filesystem::directory_iterator{path}) {
-        entries->push_back(new DirectoryEntry(entry));
-    }
-    return entries;
+MainWindow::MainWindow(SDL_Window *window) : window(window) {
+    DirectoryEntry::InitializeDefaultIcons(".conf");
+
+    this->clear_color = new float[]{0.45f, 0.55f, 0.60f, 1.00f};
+    this->done = false;
+    this->current_folder = std::filesystem::current_path();
+    this->LoadDirectoryEntries();
 }
 
-MainWindow::MainWindow(SDL_Window *window) : window(window) {
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    bool done = false;
+void MainWindow::ProcessEvent() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        ImGui_ImplSDL2_ProcessEvent(&event);
+        if (event.type == SDL_QUIT)
+            done = true;
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+            done = true;
+    }
+}
 
-    std::filesystem::path current_folder = std::filesystem::current_path();
+void MainWindow::NewFrame() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+}
 
-    DirectoryEntry::InitializeDefaultIcons(".conf");
-    auto entries = LoadEntries(current_folder);
+void MainWindow::Loop() {
+    auto io = ImGui::GetIO();
+    while (!this->done) {
+        // int x, y;
+        // SDL_GetWindowSize(window, &x, &y);
+        this->ProcessEvent();
 
-    while (!done) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT)
-                done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
-                done = true;
-        }
-
-        int x, y;
-        SDL_GetWindowSize(window, &x, &y);
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
+        this->NewFrame();
 
         ImGui::ShowDemoWindow();
 
-        ImGui::Begin("Show files!", (bool*)__null, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_HorizontalScrollbar);                          // Create a window called "Hello, world!" and append into it.
+        ImGui::Begin("Show files!", (bool *)__null, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_HorizontalScrollbar);  // Create a window called "Hello, world!" and append into it.
         ImGui::SetWindowSize(ImVec2(856, 600), 0);
 
         int count = 0;
-        for (auto const &entry : *entries) {
+        for (auto const &entry : *directory_entries) {
             ImGui::BeginGroup();
-            TextCentered(entry->path.filename(), *((ImVec4*) entry->text_color));
+            TextCentered(entry->path.filename(), *((ImVec4 *)entry->text_color));
             ImVec2 curr = ImGui::GetCursorPos();
-            int width = 96*entry->img->width/entry->img->height;
-            if(width > 200) width = 200;
-            ImGui::SetCursorPos(ImVec2(curr.x + (200 - width)*0.5, curr.y));
+            int width = 96 * entry->img->width / entry->img->height;
+            if (width > 200) width = 200;
+            ImGui::SetCursorPos(ImVec2(curr.x + (200 - width) * 0.5, curr.y));
             ImGui::Image(entry->img->GetTexture(), ImVec2(width, 96));
-            ImGui::PushTextWrapPos((count % 4)*208 + 208);
+            ImGui::PushTextWrapPos((count % 4) * 208 + 208);
             ImGui::TextWrapped(entry->path.c_str());
             ImGui::PopTextWrapPos();
             ImGui::EndGroup();
-            if(entry->is_directory && ImGui::IsItemClicked()){
-                current_folder = entry->path;
-                for (auto const &entry : *entries) {
-                    entry->~DirectoryEntry();
-                }
-                entries->~list();
-                entries = LoadEntries(current_folder);
+            if (entry->is_directory && ImGui::IsItemClicked()) {
+                this->ChangeDirectoryEntries(entry->path);
                 break;
             }
-            if(++count % 4 != 0){
+            if (++count % 4 != 0) {
                 ImGui::SameLine();
             }
         }
-        if(ImGui::Button("Back")){
-            current_folder = current_folder.parent_path();
-            for (auto const &entry : *entries) {
-                entry->~DirectoryEntry();
-            }
-            entries->~list();
-            entries = LoadEntries(current_folder);
+        if (ImGui::Button("Back")) {
+            this->ChangeDirectoryEntries(current_folder.parent_path());
         }
-
-        ImGuiIO& io = ImGui::GetIO();
         ImGui::TextWrapped("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::End();
 
-
-        // Rendering
-        ImGui::Render();
-        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        SDL_GL_SwapWindow(window);
+        this->Render();
     }
+}
+
+void MainWindow::Render() {
+    // Rendering
+    ImGui::Render();
+    auto x = (GLsizei) ImGui::GetMainViewport()->Size.x;
+    auto y = (GLsizei) ImGui::GetMainViewport()->Size.y;
+    glViewport(0, 0, x, y);
+    glClearColor(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(window);
+}
+
+void MainWindow::LoadDirectoryEntries() {
+    directory_entries = new std::list<DirectoryEntry *>();
+    for (auto const &entry : std::filesystem::directory_iterator{current_folder}) {
+        directory_entries->push_back(new DirectoryEntry(entry));
+    }
+}
+
+void MainWindow::ChangeDirectoryEntries(std::filesystem::path new_path) {
+    this->current_folder = new_path;
+    for (auto const &entry : *directory_entries) {
+        entry->~DirectoryEntry();
+    }
+    directory_entries->~list();
+    LoadDirectoryEntries();
 }

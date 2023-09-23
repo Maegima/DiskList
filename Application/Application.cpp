@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Disklist Application override implementations
  * @version 0.2
- * @date 2023-09-13
+ * @date 2023-09-23
  *
  * @copyright Copyright (c) 2023
  *
@@ -47,7 +47,7 @@ void Application::SetupSDL() {
 
 void Application::CreateWindow() {
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL3 example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+    window = SDL_CreateWindow("Disklist", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
 }
 
 void Application::CreateContext() {
