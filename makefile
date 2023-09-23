@@ -9,7 +9,7 @@ OBJS_FILES += DiskList.o Application.o MainWindow.o Image.o
 OBJS=$(OBJS_FILES:%=$(OBJDIR)/%)
 
 CXX = g++
-CXXFLAGS = -Wall -g -I$(IMGUIDIR) -I$(IMGUIDIR)/backends -IApplication
+CXXFLAGS = -Wall -g -std=c++20 -I$(IMGUIDIR) -I$(IMGUIDIR)/backends -IApplication
 LINUX_GL_LIBS = -lGL
 LIBS =
 

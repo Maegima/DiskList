@@ -13,7 +13,9 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <map>
 #include "MainWindow.hpp"
 #include "Controllers/Image.hpp"
 
@@ -39,13 +41,28 @@ void TextCentered(std::string text, ImVec4 color = ImVec4(1, 1, 1, 1)) {
     ImGui::PopStyleVar();
 }
 
+std::map<std::string, Image*> LoadDefaultImages(std::string confpath){
+    std::fstream file(confpath, std::ios::in);
+    std::string data;
+    std::map<std::string, Image*> images = std::map<std::string, Image*>();
+    while(getline(file, data)){
+        size_t pos = data.find('=');
+        if(pos != std::string::npos){
+            Image *img = new Image(data.substr(pos + 1).c_str());
+            std::string ext = data.substr(0, pos);
+            images.insert({ext, img});
+        }
+    }
+    return images;
+}
+
 MainWindow::MainWindow(SDL_Window *window) : window(window) {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     bool done = false;
 
     std::filesystem::path current_folder = std::filesystem::current_path();
 
-    Image img = Image(".images/folder-green.png");
+    auto imgs = LoadDefaultImages(".conf");
 
     while (!done) {
         SDL_Event event;
@@ -67,22 +84,34 @@ MainWindow::MainWindow(SDL_Window *window) : window(window) {
         ImGui::ShowDemoWindow();
 
         ImGui::Begin("Show files!", (bool*)__null, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_HorizontalScrollbar);                          // Create a window called "Hello, world!" and append into it.
-        ImGui::SetWindowSize(ImVec2(840, 600), 0);
+        ImGui::SetWindowSize(ImVec2(856, 600), 0);
 
         int count = 0;
         for (auto const &entry : std::filesystem::directory_iterator{current_folder}) {
             //getFileInfoList(entry);
             ImGui::BeginGroup();
-            if(entry.is_directory())
+            Image* img;
+            if(entry.is_directory()){
                 TextCentered(entry.path().filename(), ImVec4(0.20f, 1.0f, 1.0f, 1.0f));
-            else
+                img = imgs["folder"];
+            }
+            else {
                 TextCentered(entry.path().filename());
+                auto ext = entry.path().extension().c_str();
+                if(imgs.contains(ext))
+                    img = imgs[ext];
+                else
+                    img = imgs["default"];
+            }
+            ImGui::Text("pointer = %p", img->GetTexture());
+            ImGui::Text("size = %d x %d", img->width, img->height);
+            ImVec2 curr = ImGui::GetCursorPos();
+            ImGui::SetCursorPos(ImVec2(curr.x + (200 - 64)*0.5, curr.y));
+            ImGui::Image(img->GetTexture(), ImVec2(64, 64));
+            //ImGui::SetCursorPos(curr);
             ImGui::PushTextWrapPos((count % 4)*208 + 208);
             ImGui::TextWrapped(entry.path().c_str());
             ImGui::PopTextWrapPos();
-            ImGui::Text("pointer = %p", img.GetTexture());
-            ImGui::Text("size = %d x %d", img.width, img.height);
-            ImGui::Image(img.GetTexture(), ImVec2(img.width, img.height));
             ImGui::EndGroup();
             if(entry.is_directory() && ImGui::IsItemClicked()){
                 current_folder = entry.path();
