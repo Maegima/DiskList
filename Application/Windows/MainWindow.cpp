@@ -19,19 +19,6 @@
 #include "Controllers/Image.hpp"
 #include "Controllers/DirectoryEntry.hpp"
 
-void getFileInfoList(std::filesystem::directory_entry ent) {
-    if (ent.is_directory()) {
-        if(ImGui::TreeNode(ent.path().filename().c_str())){
-            for (auto const &entry : std::filesystem::directory_iterator{ent.path()}) {
-                getFileInfoList(entry);
-            }
-            ImGui::TreePop();
-        }
-    } else {
-        ImGui::BulletText(ent.path().filename().c_str());    
-    }
-}
-
 void TextCentered(std::string text, ImVec4 color = ImVec4(1, 1, 1, 1)) {
     bool t;
     ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
@@ -82,16 +69,13 @@ MainWindow::MainWindow(SDL_Window *window) : window(window) {
 
         int count = 0;
         for (auto const &entry : *entries) {
-            //getFileInfoList(entry);
             ImGui::BeginGroup();
-            //ImVec4 *color = (ImVec4*) de.text_color;
-            TextCentered(entry->path.filename());
-            ImGui::Text("pointer = %p", entry->img->GetTexture());
-            ImGui::Text("size = %d x %d", entry->img->width, entry->img->height);
+            TextCentered(entry->path.filename(), *((ImVec4*) entry->text_color));
             ImVec2 curr = ImGui::GetCursorPos();
-            ImGui::SetCursorPos(ImVec2(curr.x + (200 - 64)*0.5, curr.y));
-            ImGui::Image(entry->img->GetTexture(), ImVec2(64, 64));
-            //ImGui::SetCursorPos(curr);
+            int width = 96*entry->img->width/entry->img->height;
+            if(width > 200) width = 200;
+            ImGui::SetCursorPos(ImVec2(curr.x + (200 - width)*0.5, curr.y));
+            ImGui::Image(entry->img->GetTexture(), ImVec2(width, 96));
             ImGui::PushTextWrapPos((count % 4)*208 + 208);
             ImGui::TextWrapped(entry->path.c_str());
             ImGui::PopTextWrapPos();
