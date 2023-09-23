@@ -92,7 +92,7 @@ all: $(BINDIR)/$(EXECUTABLE)
 	@echo Build complete for $(ECHO_MESSAGE)
 
 clean:
-	rm -rf $(OBJDIR)\* $(BINDIR)\*
+	rm -rf $(OBJDIR)/* $(BINDIR)/*
 
 MD5PROJ:
 	cd Application/Controllers && [ -d "md5" ] || git clone https://github.com/Maegima/md5.git
