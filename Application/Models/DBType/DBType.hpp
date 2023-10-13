@@ -19,8 +19,8 @@ class DBType {
    public:
     const char *name = nullptr;
     bool not_null = true;
-    bool key = false;
     bool index = false;
+    bool key = false;
     std::string type = "";
     int column = -1;
     bool value_set = false;
