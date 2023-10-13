@@ -15,6 +15,15 @@
 #include "Controllers/FileInfo.hpp"
 #include <list>
 
+void add_file(std::list<FileInfo> &fs, std::filesystem::path path){
+    for (auto const &entry : std::filesystem::directory_iterator{path}) {
+            fs.push_back(FileInfo(entry));
+            if(entry.is_directory()){
+                add_file(fs, entry.path());
+            }
+        }
+}
+
 int main(int argc, char* argv[]) {
     if(argc == 1){
         auto app = Application();
@@ -54,9 +63,7 @@ int main(int argc, char* argv[]) {
 
         std::filesystem::path current_folder = std::filesystem::current_path();
         std::list<FileInfo> fl;
-        for (auto const &entry : std::filesystem::directory_iterator{current_folder}) {
-            fl.push_back(FileInfo(entry));
-        }
+        add_file(fl, current_folder);
 
         char buff[20];
         for( auto const &entry : fl){
