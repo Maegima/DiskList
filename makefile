@@ -6,12 +6,13 @@ EXECUTABLE = $(BINDIR)/disklist
 OBJS_FILES = imgui.o imgui_demo.o imgui_draw.o imgui_tables.o imgui_widgets.o
 OBJS_FILES += imgui_impl_sdl2.o imgui_impl_opengl3.o
 OBJS_FILES += DiskList.o Application.o MainWindow.o Image.o DirectoryEntry.o
+OBJS_FILES += DBType.o DBInt.o DBText.o DBTypeDict.o DBTable.o FileEntry.o
 OBJS=$(OBJS_FILES:%=$(OBJDIR)/%)
 
 CXX = g++
 CXXFLAGS = -Wall -g -std=c++20 -I$(IMGUIDIR) -I$(IMGUIDIR)/backends -IApplication
 LINUX_GL_LIBS = -lGL
-LIBS =
+LIBS = -lpthread -ldl -lm -lsqlite3
 
 ##---------------------------------------------------------------------
 ## OPENGL ES
@@ -70,6 +71,12 @@ $(OBJDIR)/%.o: Application/Windows/%.cpp $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: Application/Controllers/%.cpp $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: Application/Models/DBType/%.cpp $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJDIR)/%.o: Application/Models/DBTable/%.cpp $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(IMGUIDIR)/%.cpp $(OBJDIR)
