@@ -53,3 +53,6 @@ imgui/*
 *.ini
 
 .images/*
+
+# Database
+*.sqlite

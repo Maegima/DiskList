@@ -5,7 +5,7 @@ EXECUTABLE = $(BINDIR)/disklist
 
 OBJS_FILES = imgui.o imgui_demo.o imgui_draw.o imgui_tables.o imgui_widgets.o
 OBJS_FILES += imgui_impl_sdl2.o imgui_impl_opengl3.o
-OBJS_FILES += DiskList.o Application.o MainWindow.o Image.o DirectoryEntry.o
+OBJS_FILES += DiskList.o Application.o MainWindow.o Image.o DirectoryEntry.o FileInfo.o md5/md5.o
 OBJS_FILES += DBType.o DBInt.o DBText.o DBTypeDict.o DBTable.o FileEntry.o
 OBJS=$(OBJS_FILES:%=$(OBJDIR)/%)
 
@@ -70,7 +70,7 @@ $(OBJDIR)/%.o: Application/%.cpp $(OBJDIR)
 $(OBJDIR)/%.o: Application/Windows/%.cpp $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(OBJDIR)/%.o: Application/Controllers/%.cpp $(OBJDIR)
+$(OBJDIR)/%.o: Application/Controllers/%.cpp $(OBJDIR) $(OBJDIR)/md5
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: Application/Models/DBType/%.cpp $(OBJDIR)
@@ -88,6 +88,9 @@ $(OBJDIR)/%.o: $(IMGUIDIR)/backends/%.cpp $(OBJDIR)
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
+$(OBJDIR)/md5:
+	mkdir -p $(OBJDIR)/md5
+
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
@@ -99,7 +102,7 @@ all: $(BINDIR)/$(EXECUTABLE)
 	@echo Build complete for $(ECHO_MESSAGE)
 
 clean:
-	rm -rf $(OBJDIR)/* $(BINDIR)/*
+	rm -rf $(OBJDIR) $(BINDIR)
 
 MD5PROJ:
 	cd Application/Controllers && [ -d "md5" ] || git clone https://github.com/Maegima/md5.git

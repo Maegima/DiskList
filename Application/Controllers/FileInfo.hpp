@@ -19,12 +19,12 @@ enum FileType {Directory, File};
 
 class FileInfo {
 private:
+    uint8_t* md5sum;
+public:
     off_t size;
     long created;
     long modified;
     long accessed;
-    uint8_t* md5sum;
-public:
     std::filesystem::path path;
     FileType type;
     FileInfo(std::filesystem::directory_entry entry);

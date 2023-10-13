@@ -45,7 +45,7 @@ bool DBTable::save() {
     }
     sql.seekp(-1, std::ios_base::end);
     sql << ");";
-    fprintf(stderr, "%s\n", sql.str().c_str());
+
     return execute(sql.str().c_str()) == SQLITE_OK;
 }
 
