@@ -4,7 +4,7 @@
  * @author André Lucas Maegima
  * @brief 
  * @version 0.2
- * @date 2023-10-13
+ * @date 2023-10-29
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -19,8 +19,8 @@
 
 class FileEntry : public DBTable {
    public:
-    DBInt id = DBInt("id", true, true, true, true);
-    DBText path = DBText("path");
+    DBInt id = DBInt("id", true, true, true, false, true);
+    DBText path = DBText("path", true, true, false, true);
     DBText hash = DBText("hash", true, true);
     DBInt size = DBInt("size");
     DBInt type = DBInt("type");

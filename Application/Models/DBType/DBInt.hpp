@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief
  * @version 0.2
- * @date 2023-10-13
+ * @date 2023-10-29
  *
  * @copyright Copyright (c) 2023
  *
@@ -19,7 +19,7 @@ class DBInt : public DBType {
     int value = 0;
     bool auto_increment = false;
 
-    DBInt(const char *name, bool not_null = true, bool index = false, bool key = false, bool auto_increment = false);
+    DBInt(const char *name, bool not_null = true, bool index = false, bool key = false, bool unique = false, bool auto_increment = false);
     int operator=(const int value);
     void read(sqlite3_stmt *stmt);
     std::string val();

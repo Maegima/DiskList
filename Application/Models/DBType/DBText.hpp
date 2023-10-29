@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief
  * @version 0.2
- * @date 2023-10-13
+ * @date 2023-10-29
  *
  * @copyright Copyright (c) 2023
  *
@@ -18,7 +18,7 @@ class DBText : public DBType {
    public:
     unsigned char *value = nullptr;
 
-    DBText(const char *name, bool not_null = true, bool index = false, bool key = false);
+    DBText(const char *name, bool not_null = true, bool index = false, bool key = false, bool unique = false);
     ~DBText();
 
     unsigned char *operator=(const unsigned char *value);

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief
  * @version 0.2
- * @date 2023-10-13
+ * @date 2023-10-29
  *
  * @copyright Copyright (c) 2023
  *
@@ -13,8 +13,8 @@
 #include <sstream>
 #include "DBText.hpp"
 
-DBText::DBText(const char *name, bool not_null, bool index, bool key)
-    : DBType(name, not_null, index, key) {
+DBText::DBText(const char *name, bool not_null, bool index, bool key, bool unique)
+    : DBType(name, not_null, index, key, unique) {
     type = "TEXT";
 }
 

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief
  * @version 0.2
- * @date 2023-10-13
+ * @date 2023-10-29
  *
  * @copyright Copyright (c) 2023
  *
@@ -12,8 +12,8 @@
 #include <sstream>
 #include "DBInt.hpp"
 
-DBInt::DBInt(const char *name, bool not_null, bool index, bool key, bool auto_increment)
-    : DBType(name, not_null, index, key), auto_increment(auto_increment) {
+DBInt::DBInt(const char *name, bool not_null, bool index, bool key, bool unique, bool auto_increment)
+    : DBType(name, not_null, index, key, unique), auto_increment(auto_increment) {
     type = "INTEGER";
 }
 
@@ -32,6 +32,7 @@ std::ostringstream DBInt::create() {
     if (this->key) field << " PRIMARY KEY";
     if (this->auto_increment) field << " AUTOINCREMENT";
     if (this->not_null) field << " NOT NULL";
+    if (this->unique) field << " UNIQUE";
     return field;
 }
 
