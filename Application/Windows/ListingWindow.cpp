@@ -43,10 +43,6 @@ void ListingWindow::OnSize(wxSizeEvent& event) {
 void ListingWindow::ChangePath(std::filesystem::path path) {
     auto *sizer = this->GetSizer();
     sizer->Clear(true);
-    for(auto &card : this->cards){
-        this->RemoveChild(card);
-        //delete card;
-    }
     this->cards.clear();
     this->current = path;
     for (auto const& entry : std::filesystem::directory_iterator{current}) {        

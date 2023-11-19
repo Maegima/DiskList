@@ -20,8 +20,9 @@ Image::Image(wxWindow* parent, wxImage *image, Type type) : wxPanel(parent, wxID
 }
 
 Image::~Image() {
-    //if(type == Image::Type::DYNAMIC)
-    //    delete image;
+    //std::cout << "delete image " << this->type << "\n";
+    if(type == Image::Type::DYNAMIC)
+        delete image;
 }
 
 void Image::OnPaint(wxPaintEvent& evt) {

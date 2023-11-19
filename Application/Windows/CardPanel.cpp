@@ -44,8 +44,9 @@ CardPanel::CardPanel(ListingWindow* parent, std::filesystem::directory_entry ent
 }
 
 CardPanel::~CardPanel() {
-    //delete image;
-    //delete label;
+    //std::cout << "delete card " << entry.path() << "\n";
+    delete image;
+    delete label;
 }
 
 wxStaticText* CardPanel::CreateLabel(std::filesystem::directory_entry entry) {
