@@ -15,17 +15,21 @@
 #include <wx/wx.h>
 
 class Image : public wxPanel {
-    wxImage *image;
-    wxBitmap resized;
-    int width; 
-    int height;
-
    public:
-    Image(wxWindow* parent, wxImage *image);
+    enum Type{ STATIC, DYNAMIC };
+    Image(wxWindow* parent, wxImage *image, Image::Type type = Image::Type::STATIC);
+    ~Image();
 
     void OnPaint(wxPaintEvent& evt);
     void render(wxDC& dc);
     void OnSize(wxSizeEvent& event);
+   
+   private:
+    wxImage *image;
+    wxBitmap resized;
+    int width; 
+    int height;
+    Type type;
 };
 
 #endif /* DISKLIST_IMAGE_HPP */

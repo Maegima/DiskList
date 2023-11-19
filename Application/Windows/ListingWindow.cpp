@@ -20,12 +20,7 @@ ListingWindow::ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos
     
     wxWrapSizer *sizer = new wxWrapSizer(wxHORIZONTAL);
     SetSizer(sizer);
-    std::filesystem::path current = std::filesystem::current_path();
-    for (auto const& entry : std::filesystem::directory_iterator{current}) {        
-        CardPanel *card = new CardPanel(this, entry);
-        sizer->Add(card, 0, wxLEFT | wxRIGHT, 0);
-        cards.push_back(card);
-    }
+    ChangePath(std::filesystem::current_path());
 
     this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight()/40);
     
@@ -43,4 +38,23 @@ void ListingWindow::OnSize(wxSizeEvent& event) {
     //this->SetSize(newSize.x, newSize.y - 40);
     Refresh();
     event.Skip();
+}
+
+void ListingWindow::ChangePath(std::filesystem::path path) {
+    auto *sizer = this->GetSizer();
+    sizer->Clear(true);
+    for(auto &card : this->cards){
+        this->RemoveChild(card);
+        //delete card;
+    }
+    this->cards.clear();
+    this->current = path;
+    for (auto const& entry : std::filesystem::directory_iterator{current}) {        
+        CardPanel *card = new CardPanel(this, entry);
+        sizer->Add(card, 0, wxLEFT | wxRIGHT, 0);
+        cards.push_back(card);
+    }
+    this->SendSizeEvent();
+    this->Refresh();
+    this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight()/40);
 }

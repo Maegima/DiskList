@@ -11,11 +11,17 @@
 
 #include "Image.hpp"
 
-Image::Image(wxWindow* parent, wxImage *image) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
+Image::Image(wxWindow* parent, wxImage *image, Type type) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
     this->image = image;
+    this->type = type;
     width = -1;
     height = -1;
     Bind(wxEVT_PAINT, &Image::OnPaint, this, wxID_ANY);
+}
+
+Image::~Image() {
+    //if(type == Image::Type::DYNAMIC)
+    //    delete image;
 }
 
 void Image::OnPaint(wxPaintEvent& evt) {
@@ -28,8 +34,8 @@ void Image::OnPaint(wxPaintEvent& evt) {
  * Here we call refresh to tell the panel to draw itself again.
  * So when the user resizes the image panel the image should be resized too.
  */
-void Image::OnSize(wxSizeEvent& event){
-    //skip the event.
+void Image::OnSize(wxSizeEvent& event) {
+    // skip the event.
     Refresh();
     event.Skip();
 }
@@ -37,17 +43,17 @@ void Image::OnSize(wxSizeEvent& event){
 void Image::render(wxDC& dc) {
     int neww, newh;
     dc.GetSize(&neww, &newh);
-    
+
     if (neww != width || newh != height) {
-        width = image->GetWidth()*((double)newh/(double)image->GetHeight());
+        width = image->GetWidth() * ((double)newh / (double)image->GetHeight());
         height = newh;
-        if(width > neww){
-            height = image->GetHeight()*((double)neww/(double)image->GetWidth());
+        if (width > neww) {
+            height = image->GetHeight() * ((double)neww / (double)image->GetWidth());
             width = neww;
         }
         resized = wxBitmap(image->Scale(width, height /*, wxIMAGE_QUALITY_HIGH*/));
-        dc.DrawBitmap(resized, (neww-width)/2, (newh-height)/2, false);
+        dc.DrawBitmap(resized, (neww - width) / 2, (newh - height) / 2, false);
     } else {
-        dc.DrawBitmap(resized, (neww-width)/2, (newh-height)/2, false);
+        dc.DrawBitmap(resized, (neww - width) / 2, (newh - height) / 2, false);
     }
 }

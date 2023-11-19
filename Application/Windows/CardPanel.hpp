@@ -17,12 +17,17 @@
 #include <map>
 #include "Controllers/Image.hpp"
 
+class ListingWindow;
+
 class CardPanel : public wxPanel {
     public:
+        ListingWindow *parent;
+        std::filesystem::directory_entry entry;
         Image *image;
         wxStaticText *label;
         
-        CardPanel(wxWindow* parent, std::filesystem::directory_entry entry);
+        CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry);
+        ~CardPanel();
         
         void OnFolderClick(wxMouseEvent& event);
         void OnTextClick(wxMouseEvent& event);

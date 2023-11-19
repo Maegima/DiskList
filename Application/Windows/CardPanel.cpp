@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include "CardPanel.hpp"
+#include "ListingWindow.hpp"
 
 std::map<std::string, wxImage*> CardPanel::default_images;
 
@@ -28,7 +29,9 @@ void CardPanel::InitializeDefaultIcons(const char* path) {
     }
 }
 
-CardPanel::CardPanel(wxWindow* parent, std::filesystem::directory_entry entry) : wxPanel(parent, wxID_ANY), 
+CardPanel::CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry) : wxPanel(parent, wxID_ANY), 
+    parent(parent),
+    entry(entry),
     image(CreateImage(entry)), 
     label(CreateLabel(entry))
     {
@@ -38,6 +41,11 @@ CardPanel::CardPanel(wxWindow* parent, std::filesystem::directory_entry entry) :
     sizer->Add(image, 0);
     sizer->Add(label, 0, wxALIGN_CENTER);
     sizer->AddSpacer(10);
+}
+
+CardPanel::~CardPanel() {
+    //delete image;
+    //delete label;
 }
 
 wxStaticText* CardPanel::CreateLabel(std::filesystem::directory_entry entry) {
@@ -67,7 +75,7 @@ Image* CardPanel::CreateImage(std::filesystem::directory_entry entry) {
         img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFolderClick, this, wxID_ANY);
     } else if (extension == ".png") {
         wxString path = wxString::FromUTF8(entry.path());
-        img = new Image(this, new wxImage(path, wxBITMAP_TYPE_PNG));
+        img = new Image(this, new wxImage(path, wxBITMAP_TYPE_PNG), Image::Type::DYNAMIC);
     } 
     else if(default_images.contains(extension)){
         img = new Image(this, default_images[extension]);
@@ -84,6 +92,6 @@ void CardPanel::OnTextClick(wxMouseEvent& event) {
 }
 
 void CardPanel::OnFolderClick(wxMouseEvent& event) {
-    std::cout << label->GetLabel() << "(2)\n";
-    event.Skip();
+    std::cout << label->GetLabel() << " " << parent->current << "\n";
+    parent->ChangePath(entry);
 }

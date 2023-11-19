@@ -21,6 +21,7 @@ class ListingWindow : public wxScrolledWindow {
    public:
     ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size);
     void OnSize(wxSizeEvent& event);
+    void ChangePath(std::filesystem::path path);
 
     std::list<CardPanel*> cards;
     std::filesystem::path current;
