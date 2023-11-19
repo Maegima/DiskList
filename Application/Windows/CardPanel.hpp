@@ -26,7 +26,7 @@ class CardPanel : public wxPanel {
         Image *image;
         wxStaticText *label;
         
-        CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry);
+        CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry, wxString path = "");
         ~CardPanel();
         
         void OnFolderClick(wxMouseEvent& event);
@@ -34,7 +34,7 @@ class CardPanel : public wxPanel {
         static void InitializeDefaultIcons(const char* path);
     private:
         static std::map<std::string, wxImage*> default_images;
-        wxStaticText *CreateLabel(std::filesystem::directory_entry entry);
+        wxStaticText *CreateLabel(std::filesystem::directory_entry entry, wxString path);
         Image *CreateImage(std::filesystem::directory_entry entry);
 };
 

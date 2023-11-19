@@ -29,11 +29,12 @@ void CardPanel::InitializeDefaultIcons(const char* path) {
     }
 }
 
-CardPanel::CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry) : wxPanel(parent, wxID_ANY), 
+CardPanel::CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry, wxString path) 
+    : wxPanel(parent, wxID_ANY), 
     parent(parent),
     entry(entry),
     image(CreateImage(entry)), 
-    label(CreateLabel(entry))
+    label(CreateLabel(entry, path))
     {
     auto sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
@@ -44,13 +45,12 @@ CardPanel::CardPanel(ListingWindow* parent, std::filesystem::directory_entry ent
 }
 
 CardPanel::~CardPanel() {
-    //std::cout << "delete card " << entry.path() << "\n";
     delete image;
     delete label;
 }
 
-wxStaticText* CardPanel::CreateLabel(std::filesystem::directory_entry entry) {
-    wxString name = wxString::FromUTF8(entry.path().filename());
+wxStaticText* CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxString path) {
+    wxString name = path.IsEmpty() ? wxString::FromUTF8(entry.path().filename()) : path;
     wxStaticText *text = new wxStaticText(this, wxID_ANY, name, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
     int max_text_size = 180;
     while(text->m_width > 200) {
