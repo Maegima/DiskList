@@ -46,9 +46,6 @@ resources.c
 # Doxygen version control files
 *.ddh
 
-# Dear ImGui
-imgui/*
-
 #Ini file
 *.ini
 

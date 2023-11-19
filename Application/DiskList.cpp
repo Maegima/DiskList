@@ -2,15 +2,15 @@
  * @file DiskList.cpp
  * @author André Lucas Maegima
  * @brief Folder listing program with md5 checksum.
- * @version 0.2
- * @date 2023-10-13
+ * @version 0.3
+ * @date 2023-11-19
  *
  * @copyright Copyright (c) 2023
  *
  */
 
+#include <wx/wx.h>
 #include "Application.hpp"
-#include "Windows/MainWindow.hpp"
 #include "Models/DBTable/FileEntry.hpp"
 #include "Controllers/FileInfo.hpp"
 #include <list>
@@ -59,11 +59,14 @@ void organize_file(const std::filesystem::path &path) {
     }
 }
 
+// wxIMPLEMENT_APP(MyApp);
+
+wxAppInitializer wxTheAppInitializer((wxAppInitializerFunction) new Application);
+
 int main(int argc, char *argv[]) {
     if (argc == 1) {
-        auto app = Application();
-        auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-        app.Run(new MainWindow("Disklist", 1280, 720, window_flags));
+        wxImage::AddHandler(new wxPNGHandler());
+        return wxEntry(argc, argv);
     }
     std::string command = argv[1];
     if (command == "createdb") {
@@ -96,7 +99,7 @@ int main(int argc, char *argv[]) {
 
         FileEntry fe = FileEntry(db);
 
-        std::filesystem::path current_folder = std::filesystem::current_path();
+        std::filesystem::path current_folder = argc > 2 ? argv[2] : "";
         std::list<FileInfo> fl;
         add_file(fl, current_folder);
 

@@ -2,8 +2,8 @@
  * @file Application.hpp
  * @author André Lucas Maegima
  * @brief Disklist Application definitions
- * @version 0.2
- * @date 2023-09-23
+ * @version 0.3
+ * @date 2023-11-19
  *
  * @copyright Copyright (c) 2023
  *
@@ -12,16 +12,11 @@
 #ifndef DISKLIST_APPLICATION_HPP
 #define DISKLIST_APPLICATION_HPP
 
-#include "Windows/MainWindow.hpp"
+#include <wx/wx.h>
 
-class Application {
-   protected:
-    MainWindow *window;
-
+class Application : public wxApp {
    public:
-    Application();
-    ~Application();
-    void Run(MainWindow *window);
+    virtual bool OnInit();    
 };
 
 #endif /* DISKLIST_APPLICATION_HPP */
