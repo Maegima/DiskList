@@ -12,11 +12,12 @@
 #include "wx/wrapsizer.h"
 #include "ListingWindow.hpp"
 
-ListingWindow::ListingWindow(wxWindow* parent, InfoWindow *iwindow, wxWindowID id, const wxPoint& pos, const wxSize& size) 
+ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID id, const wxPoint& pos, const wxSize& size)
     : wxScrolledWindow(parent, id, pos, size, wxSUNKEN_BORDER),
-    iwindow(iwindow) {
+      iwindow(iwindow),
+      config(".conf") {
     SetBackgroundColour(*wxWHITE);
-    CardPanel::InitializeDefaultIcons(".conf");
+    CardPanel::InitializeDefaultIcons(config.image);
 
     Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
 

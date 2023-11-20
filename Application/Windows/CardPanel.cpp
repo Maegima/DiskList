@@ -9,23 +9,14 @@
  * 
  */
 
-#include <fstream>
 #include "CardPanel.hpp"
 #include "ListingWindow.hpp"
 
 std::map<std::string, wxImage*> CardPanel::default_images;
 
-void CardPanel::InitializeDefaultIcons(const char* path) {
-    std::fstream file(path, std::ios::in);
-    std::string data;
-    while (getline(file, data)) {
-        size_t pos = data.find('=');
-        if (pos != std::string::npos) {
-            wxImage* img = new wxImage(data.substr(pos + 1).c_str(), wxBITMAP_TYPE_PNG);
-            std::string ext = data.substr(0, pos);
-            default_images.insert({ext, img});
-            std::cout << data << " " << img->GetHeight() << " " << img->GetWidth() << std::endl;
-        }
+void CardPanel::InitializeDefaultIcons(std::map<std::string, std::string> config) {
+    for(auto &[key, value] : config){
+        default_images.insert({key, new wxImage(value, wxBITMAP_TYPE_PNG)});
     }
 }
 
@@ -73,7 +64,8 @@ Image* CardPanel::CreateImage(std::filesystem::directory_entry entry) {
     std::string extension = entry.path().extension().string();
     if (entry.is_directory()) {
         img = new Image(this, default_images["folder"]);   
-        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFolderClick, this, wxID_ANY);
+        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFolderLeftClick, this, wxID_ANY);
+        img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFolderRightClick, this, wxID_ANY);
     } else if (extension == ".png") {
         wxString path = wxString::FromUTF8(entry.path());
         img = new Image(this, new wxImage(path, wxBITMAP_TYPE_PNG), Image::Type::DYNAMIC);
@@ -93,7 +85,7 @@ void CardPanel::OnTextClick(wxMouseEvent& event) {
     event.Skip();
 }
 
-void CardPanel::OnFolderClick(wxMouseEvent& event) {
+void CardPanel::OnFolderLeftClick(wxMouseEvent& event) {
     std::cout << label->GetLabel() << " " << parent->current << "\n";
     parent->ChangePath(file.path);
 }
@@ -113,4 +105,21 @@ bool CardPanel::CompareCards::operator() (const CardPanel* c1, const CardPanel* 
     if(c1->file.type != c2->file.type)
         return c1->file.type == FileType::Directory;
     return c1->file.path < c2->file.path;
+}
+
+void CardPanel::OnFolderMenuClick(wxCommandEvent &evt) {
+    switch (evt.GetId()) {
+        case FOLDER_UNWIND:     
+            break;
+        case FOLDER_ORGANIZE:
+            break;
+    }
+}
+
+void CardPanel::OnFolderRightClick(wxMouseEvent &evt) {
+    wxMenu menu;
+    menu.Append(FOLDER_UNWIND, "Unwind files...");
+    menu.Append(FOLDER_ORGANIZE, "Organize files...");
+    menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFolderMenuClick), NULL, this);
+    PopupMenu(&menu);
 }

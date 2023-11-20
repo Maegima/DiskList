@@ -17,6 +17,7 @@
 #include <filesystem>
 #include "CardPanel.hpp"
 #include "InfoWindow.hpp"
+#include "Controllers/Configuration.hpp"
 
 class ListingWindow : public wxScrolledWindow {
    public:
@@ -27,5 +28,6 @@ class ListingWindow : public wxScrolledWindow {
     std::set<CardPanel*, CardPanel::CompareCards> cards;
     std::filesystem::path current;
     InfoWindow *iwindow;
+    Configuration config;
 };
 #endif // _LISTINGWINDOW_HPP_

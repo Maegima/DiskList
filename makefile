@@ -2,7 +2,7 @@ OBJDIR=obj
 BINDIR=bin
 EXECUTABLE = $(BINDIR)/disklist
 
-OBJS_FILES = DiskList.o Application.o Image.o FileInfo.o md5/md5.o
+OBJS_FILES = DiskList.o Application.o Image.o FileInfo.o md5/md5.o Configuration.o
 OBJS_FILES += MainWindow.o ListingWindow.o CardPanel.o InfoWindow.o
 OBJS_FILES += DBType.o DBInt.o DBText.o DBTypeDict.o DBTable.o FileEntry.o
 OBJS=$(OBJS_FILES:%=$(OBJDIR)/%)
