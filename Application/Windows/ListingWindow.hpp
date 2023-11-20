@@ -13,7 +13,7 @@
 #define _LISTINGWINDOW_HPP_
 
 #include <wx/wx.h>
-#include <list>
+#include <set>
 #include <filesystem>
 #include "CardPanel.hpp"
 
@@ -23,7 +23,7 @@ class ListingWindow : public wxScrolledWindow {
     void OnSize(wxSizeEvent& event);
     void ChangePath(std::filesystem::path path);
 
-    std::list<CardPanel*> cards;
+    std::set<CardPanel*, CardPanel::CompareCards> cards;
     std::filesystem::path current;
 };
 #endif // _LISTINGWINDOW_HPP_

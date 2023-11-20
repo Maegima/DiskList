@@ -47,14 +47,13 @@ void ListingWindow::ChangePath(std::filesystem::path path) {
     this->current = path;
     if(path.has_parent_path()){
         std::filesystem::directory_entry parent_entry(path.parent_path());
-        CardPanel *card = new CardPanel(this, parent_entry, "..");
-        sizer->Add(card, 0, wxLEFT | wxRIGHT, 0);
-        cards.push_back(card);
+        cards.insert(new CardPanel(this, parent_entry, ".."));
     }
     for (auto const& entry : std::filesystem::directory_iterator{current}) {        
-        CardPanel *card = new CardPanel(this, entry);
+        cards.insert(new CardPanel(this, entry));
+    }
+    for (auto const& card : cards) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT, 0);
-        cards.push_back(card);
     }
     this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight()/40);
     this->SendSizeEvent();

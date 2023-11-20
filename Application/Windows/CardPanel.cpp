@@ -96,3 +96,11 @@ void CardPanel::OnFolderClick(wxMouseEvent& event) {
     std::cout << label->GetLabel() << " " << parent->current << "\n";
     parent->ChangePath(entry);
 }
+
+bool CardPanel::CompareCards::operator() (const CardPanel* c1, const CardPanel* c2) const {
+    if(c1->entry.is_directory() && !c2->entry.is_directory())
+        return true;
+    else if(!c1->entry.is_directory() && c2->entry.is_directory())
+        return false;
+    return c1->entry.path() < c2->entry.path();
+}
