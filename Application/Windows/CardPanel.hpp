@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.3
- * @date 2023-11-19
+ * @date 2023-11-20
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -30,6 +30,7 @@ class CardPanel : public wxPanel {
         ~CardPanel();
         
         void OnFolderClick(wxMouseEvent& event);
+        void OnFileClick(wxMouseEvent& event);
         void OnTextClick(wxMouseEvent& event);
         static void InitializeDefaultIcons(const char* path);
 

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Disklist Main Window Implementations
  * @version 0.3
- * @date 2023-11-19
+ * @date 2023-11-20
  *
  * @copyright Copyright (c) 2023
  *
@@ -11,7 +11,7 @@
 
 #include "MainWindow.hpp"
 
-MainWindow::MainWindow() : wxFrame(NULL, wxID_ANY, "Hello World", wxDefaultPosition, wxSize(800, 600)) {
+MainWindow::MainWindow() : wxFrame(NULL, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1050, 600)) {
     wxMenu* menuFile = new wxMenu;
     this->SetMinSize(wxSize(800, 600));
     menuFile->Append(ID_Hello, "&Hello...\tCtrl-H", "Help string shown in status bar for this menu item");
@@ -28,13 +28,21 @@ MainWindow::MainWindow() : wxFrame(NULL, wxID_ANY, "Hello World", wxDefaultPosit
     SetMenuBar(menuBar);
 
     CreateStatusBar();
-    SetStatusText("Welcome to wxWidgets!");
+    SetStatusText("...");
 
     Bind(wxEVT_MENU, &MainWindow::OnHello, this, ID_Hello);
     Bind(wxEVT_MENU, &MainWindow::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MainWindow::OnExit, this, wxID_EXIT);
 
-    lwindow = new ListingWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    iwindow = new InfoWindow(this, wxID_ANY, wxPoint(800, 0), wxSize(250, 600));
+    lwindow = new ListingWindow(this, iwindow, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    sizer->Add(lwindow, wxEXPAND);
+    sizer->Add(iwindow);
+    
+    SetSizer(sizer);
 }
 
 void MainWindow::OnExit(wxCommandEvent& event) {

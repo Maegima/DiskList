@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2023-11-19
+ * @date 2023-11-20
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -82,6 +82,7 @@ Image* CardPanel::CreateImage(std::filesystem::directory_entry entry) {
         img = new Image(this, default_images[extension]);
     } else {
         img = new Image(this, default_images["default"]);
+        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileClick, this, wxID_ANY);
     }
     return img;
     
@@ -95,6 +96,11 @@ void CardPanel::OnTextClick(wxMouseEvent& event) {
 void CardPanel::OnFolderClick(wxMouseEvent& event) {
     std::cout << label->GetLabel() << " " << parent->current << "\n";
     parent->ChangePath(entry);
+}
+
+void CardPanel::OnFileClick(wxMouseEvent& event) {
+    std::cout << label->GetLabel() << " " << parent->current << " file\n";
+    parent->iwindow->grid->FillGrid(entry);
 }
 
 bool CardPanel::CompareCards::operator() (const CardPanel* c1, const CardPanel* c2) const {
