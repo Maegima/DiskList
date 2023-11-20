@@ -16,13 +16,14 @@
 #include <filesystem>
 #include <map>
 #include "Controllers/Image.hpp"
+#include "Controllers/FileInfo.hpp"
 
 class ListingWindow;
 
 class CardPanel : public wxPanel {
     public:
         ListingWindow *parent;
-        std::filesystem::directory_entry entry;
+        FileInfo file;
         Image *image;
         wxStaticText *label;
         

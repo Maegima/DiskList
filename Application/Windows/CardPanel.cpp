@@ -32,7 +32,7 @@ void CardPanel::InitializeDefaultIcons(const char* path) {
 CardPanel::CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry, wxString path) 
     : wxPanel(parent, wxID_ANY), 
     parent(parent),
-    entry(entry),
+    file(FileInfo(entry, false)),
     image(CreateImage(entry)), 
     label(CreateLabel(entry, path))
     {
@@ -95,21 +95,22 @@ void CardPanel::OnTextClick(wxMouseEvent& event) {
 
 void CardPanel::OnFolderClick(wxMouseEvent& event) {
     std::cout << label->GetLabel() << " " << parent->current << "\n";
-    parent->ChangePath(entry);
+    parent->ChangePath(file.path);
 }
 
 void CardPanel::OnFileClick(wxMouseEvent& event) {
     std::cout << label->GetLabel() << " " << parent->current << " file\n";
     std::list<std::pair<wxString, wxString>> list;
-    list.push_back({"Name", entry.path().filename().string()});
-    list.push_back({"Size", wxString() << entry.file_size()});
+    list.push_back({"Name", file.path.filename().string()});
+    list.push_back({"Size", wxString() << file.size_str()});
+    list.push_back({"Created", wxString() << file.created_str()});
+    list.push_back({"Modified", wxString() << file.modified_str()});
+    list.push_back({"Accessed", wxString() << file.accessed_str()});
     parent->iwindow->FillGrid(list);
 }
 
 bool CardPanel::CompareCards::operator() (const CardPanel* c1, const CardPanel* c2) const {
-    if(c1->entry.is_directory() && !c2->entry.is_directory())
-        return true;
-    else if(!c1->entry.is_directory() && c2->entry.is_directory())
-        return false;
-    return c1->entry.path() < c2->entry.path();
+    if(c1->file.type != c2->file.type)
+        return c1->file.type == FileType::Directory;
+    return c1->file.path < c2->file.path;
 }

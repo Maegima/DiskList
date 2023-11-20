@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Folder listing program with md5 checksum.
  * @version 0.3
- * @date 2023-11-19
+ * @date 2023-11-20
  *
  * @copyright Copyright (c) 2023
  *
@@ -103,14 +103,10 @@ int main(int argc, char *argv[]) {
         std::list<FileInfo> fl;
         add_file(fl, current_folder);
 
-        char buff[20];
         for (auto const &entry : fl) {
-            strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&entry.accessed));
-            fe.accessed = (unsigned char *)buff;
-            strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&entry.modified));
-            fe.modified = (unsigned char *)buff;
-            strftime(buff, 20, "%Y-%m-%d %H:%M:%S", localtime(&entry.created));
-            fe.created = (unsigned char *)buff;
+            fe.accessed = (unsigned char *)entry.accessed_str().c_str();
+            fe.modified = (unsigned char *)entry.modified_str().c_str();
+            fe.created = (unsigned char *)entry.accessed_str().c_str();
             fe.size = entry.size;
             fe.hash = (unsigned char *)entry.md5sumString().c_str();
             fe.type = entry.type;
