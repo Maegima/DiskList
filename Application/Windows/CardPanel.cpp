@@ -100,7 +100,10 @@ void CardPanel::OnFolderClick(wxMouseEvent& event) {
 
 void CardPanel::OnFileClick(wxMouseEvent& event) {
     std::cout << label->GetLabel() << " " << parent->current << " file\n";
-    parent->iwindow->grid->FillGrid(entry);
+    std::list<std::pair<wxString, wxString>> list;
+    list.push_back({"Name", entry.path().filename().string()});
+    list.push_back({"Size", wxString() << entry.file_size()});
+    parent->iwindow->FillGrid(list);
 }
 
 bool CardPanel::CompareCards::operator() (const CardPanel* c1, const CardPanel* c2) const {
