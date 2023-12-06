@@ -11,6 +11,7 @@
 
 #include "CardPanel.hpp"
 #include "ListingWindow.hpp"
+#include "Controllers/FileSystem.hpp"
 
 std::map<std::string, wxImage *> CardPanel::default_images;
 
@@ -125,94 +126,21 @@ bool CardPanel::CompareCards::operator()(const CardPanel *c1, const CardPanel *c
     return c1->file.path < c2->file.path;
 }
 
-void entry_move(const std::filesystem::path &entry, const Configuration &config) {
-    std::string extension = entry.extension().string();
-    std::filesystem::path path = entry.parent_path();
-    for (const auto &[key, list] : config.organize) {
-        if (std::find(list.begin(), list.end(), extension) != list.end()) {
-            path /= key;
-            break;
-        }
-    }
-    path /= entry.filename().c_str();
-    if (path != entry) {
-        if (!std::filesystem::exists(path.parent_path())) {
-            std::filesystem::create_directory(path.parent_path());
-        }
-        std::filesystem::rename(entry, path);
-    }
-}
-
-void organize_file(const std::filesystem::path &path, const Configuration &config) {
-    std::filesystem::path folder = path;
-    for (auto const &entry : std::filesystem::directory_iterator{path}) {
-        std::filesystem::path filename = entry.path().filename();
-        if (entry.is_regular_file()) {
-            try {
-                entry_move(entry, config);
-            } catch (std::filesystem::filesystem_error &e) {
-            }
-        } else if (entry.is_directory() && !config.organize.contains(filename)) {
-            organize_file(entry, config);
-        }
-    }
-}
-
-std::list<std::filesystem::path> get_files(const std::filesystem::path &path) {
-    std::list<std::filesystem::path> files;
-    for (auto const &entry : std::filesystem::directory_iterator{path}) {
-        if (entry.is_regular_file()) {
-            files.push_back(entry);
-        } else if (entry.is_directory()) {
-            files.splice(files.end(), get_files(entry));
-        }
-    }
-    return files;
-}
-
-std::list<std::filesystem::path> get_names(const std::filesystem::path &path) {
-    std::list<std::filesystem::path> names;
-    for (auto const &entry : std::filesystem::directory_iterator{path}) {
-        std::filesystem::path filename = entry.path().filename();
-        names.push_back(filename);
-    }
-    return names;
-}
-
-void unwind_files(const std::filesystem::path &path, const std::filesystem::path &parent) {
-    auto files_to_unwind = get_files(path);
-    auto current_names = get_names(parent);
-    for (auto const &file : files_to_unwind) {
-        int count = 1;
-        std::string stem = file.filename().stem();
-        std::string extension = file.filename().extension();
-        std::string filename = file.filename();
-        while (std::find(current_names.begin(), current_names.end(), filename) != current_names.end()) {
-            filename = stem + "(" + std::to_string(count++) + ")" + extension;
-        }
-        current_names.push_back(filename);
-        std::filesystem::path new_path = parent / filename;
-        try {
-            if (!std::filesystem::exists(new_path)) {
-                std::filesystem::rename(file, new_path);
-            } else {
-                wxLogError(wxString(new_path.string() + " exists!"));
-            }
-        } catch (std::filesystem::filesystem_error &e) {
-            wxLogError(wxString(filename + ": ") << e.what());
-        }
-    }
-}
-
 void CardPanel::OnFolderMenuClick(wxCommandEvent &evt) {
+    FileSystem::Result result;
     int eventId = evt.GetId();
     switch (eventId) {
         case FOLDER_UNWIND:
-            unwind_files(this->file.path, this->file.path.parent_path());
+            result = FileSystem::UnwindFolder(this->file.path);
             break;
         case FOLDER_ORGANIZE:
-            organize_file(this->file.path, this->parent->config);
+            result = FileSystem::OrganizeFolder(this->file.path, this->parent->config);
             break;
+    }
+    if(!result) {
+        for(auto const &error : result.errors) {
+            wxLogWarning(wxString(error));
+        }
     }
 }
 

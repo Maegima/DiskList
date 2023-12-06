@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.3
- * @date 2023-11-20
+ * @date 2023-12-06
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -23,6 +23,9 @@ class ListingWindow : public wxScrolledWindow {
    public:
     ListingWindow(wxWindow* parent, InfoWindow *iwindow, wxWindowID id, const wxPoint& pos, const wxSize& size);
     void OnSize(wxSizeEvent& event);
+    void OnFolderRightClick(wxMouseEvent& event);
+    void OnFolderMenuClick(wxCommandEvent& event);
+    
     void ChangePath(std::filesystem::path path);
 
     std::set<CardPanel*, CardPanel::CompareCards> cards;
