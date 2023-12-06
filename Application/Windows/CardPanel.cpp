@@ -57,6 +57,12 @@ wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxS
         text->SetLabel(newstr);
         max_text_size -= 10;
     }
+    if(entry.is_directory()){
+        text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFolderLeftClick, this, wxID_ANY);
+        text->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFolderRightClick, this, wxID_ANY);
+    } else {
+        text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileClick, this, wxID_ANY);
+    }
     text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnTextClick, this, wxID_ANY);
     return text;
 }
