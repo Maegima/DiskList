@@ -42,7 +42,10 @@ class CardPanel : public wxPanel {
     void OnEnterPanel(wxMouseEvent& event);
     void OnLeavePanel(wxMouseEvent& event);
 
-    void OnFileClick(wxMouseEvent& event);
+    void OnFileLeftClick(wxMouseEvent& event);
+    void OnFileRightClick(wxMouseEvent& event);
+    void OnFileMenuClick(wxCommandEvent& event);
+    
     void OnTextClick(wxMouseEvent& event);
 
     static void InitializeDefaultIcons(std::map<std::string, std::string> config);

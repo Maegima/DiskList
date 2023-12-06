@@ -57,11 +57,12 @@ wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxS
         text->SetLabel(newstr);
         max_text_size -= 10;
     }
-    if(entry.is_directory()){
+    if (entry.is_directory()) {
         text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFolderLeftClick, this, wxID_ANY);
         text->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFolderRightClick, this, wxID_ANY);
     } else {
-        text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileClick, this, wxID_ANY);
+        text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
+        text->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     }
     text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnTextClick, this, wxID_ANY);
     return text;
@@ -81,7 +82,8 @@ Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
         img = new Image(this, default_images[extension]);
     } else {
         img = new Image(this, default_images["default"]);
-        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileClick, this, wxID_ANY);
+        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
+        img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     }
     return img;
 }
@@ -96,7 +98,7 @@ void CardPanel::OnFolderLeftClick(wxMouseEvent &event) {
     parent->ChangePath(file.path);
 }
 
-void CardPanel::OnFileClick(wxMouseEvent &event) {
+void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
     std::cout << label->GetLabel() << " " << parent->current << " file\n";
     std::list<std::pair<wxString, wxString>> list;
     list.push_back({"Name", file.path.filename().string()});
@@ -106,6 +108,16 @@ void CardPanel::OnFileClick(wxMouseEvent &event) {
     list.push_back({"Accessed", file.accessed_str()});
     parent->iwindow->FillGrid(list);
 }
+
+void CardPanel::OnFileRightClick(wxMouseEvent &event) {
+    wxMenu menu;
+    for (auto event : this->parent->config.folder) {
+        menu.Append(event.first, "Move to " + event.second.second);
+    }
+    menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFileMenuClick), NULL, this);
+    PopupMenu(&menu);
+}
+
 
 bool CardPanel::CompareCards::operator()(const CardPanel *c1, const CardPanel *c2) const {
     if (c1->file.type != c2->file.type)
@@ -193,13 +205,34 @@ void unwind_files(const std::filesystem::path &path, const std::filesystem::path
 }
 
 void CardPanel::OnFolderMenuClick(wxCommandEvent &evt) {
-    switch (evt.GetId()) {
+    int eventId = evt.GetId();
+    switch (eventId) {
         case FOLDER_UNWIND:
             unwind_files(this->file.path, this->file.path.parent_path());
             break;
         case FOLDER_ORGANIZE:
             organize_file(this->file.path, this->parent->config);
             break;
+    }
+}
+
+void CardPanel::OnFileMenuClick(wxCommandEvent &evt) {
+    int eventId = evt.GetId();
+    switch (eventId) {
+        default:
+            if (eventId > 2000 && eventId < 3000) {
+                if (this->parent->config.folder.contains(eventId)) {
+                    std::filesystem::path folder = this->parent->config.folder[eventId].first;
+                    std::filesystem::path move_path = this->file.path.parent_path() / folder;
+                    std::filesystem::path new_path = move_path / this->file.path.filename();
+                    if (!std::filesystem::exists(move_path)) {
+                        std::filesystem::create_directory(move_path);
+                    }
+                    if (!std::filesystem::exists(new_path)) {
+                        std::filesystem::rename(this->file.path, new_path);
+                    }
+                }
+            }
     }
 }
 
@@ -211,26 +244,24 @@ void CardPanel::OnFolderRightClick(wxMouseEvent &evt) {
     PopupMenu(&menu);
 }
 
-bool CheckPosition(wxRect rect, wxPoint pos, int box){
-    return rect.GetX() < pos.x - box && rect.GetRight() > pos.x + box 
-    && rect.GetY() < pos.y - box && rect.GetBottom() > pos.y + box;
+bool CheckPosition(wxRect rect, wxPoint pos, int box) {
+    return rect.GetX() < pos.x - box && rect.GetRight() > pos.x + box && rect.GetY() < pos.y - box && rect.GetBottom() > pos.y + box;
 }
 
-void CardPanel::OnEnterPanel(wxMouseEvent& event) {
+void CardPanel::OnEnterPanel(wxMouseEvent &event) {
     this->image->ChangeLightness(130);
     this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHT));
     this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
 }
 
-void CardPanel::OnLeavePanel(wxMouseEvent& event) {
-	auto mousePosition = ClientToScreen(event.GetPosition());
+void CardPanel::OnLeavePanel(wxMouseEvent &event) {
+    auto mousePosition = ClientToScreen(event.GetPosition());
     auto rect = GetScreenRect();
-    if(CheckPosition(rect, mousePosition, 0)){
+    if (CheckPosition(rect, mousePosition, 0)) {
         this->image->ChangeLightness(130);
         this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHT));
         this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
-    }
-    else{
+    } else {
         this->image->ChangeLightness(100);
         this->label->SetBackgroundColour(*wxWHITE);
         this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_BTNTEXT));

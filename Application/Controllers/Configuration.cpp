@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Configuration file class implementation
  * @version 0.3
- * @date 2023-11-20
+ * @date 2023-12-06
  *
  * @copyright Copyright (c) 2023
  *
@@ -45,7 +45,7 @@ Configuration::Configuration(const std::string path) : file(std::fstream(path, s
                     size_t pos = value.find("_");
                     std::string name = value.substr(0, pos);
                     int id = stoi(value.substr(pos + 1));
-                    folder.insert({key, {value, id}});
+                    folder.insert({id, {key, name}});
                 }
             } else if (space == "organize") {
                 for (auto &[key, value] : items) {
