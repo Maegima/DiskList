@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Image texture loader definition
  * @version 0.3
- * @date 2023-11-19
+ * @date 2023-12-06
  *
  * @copyright Copyright (c) 2023
  *
@@ -23,13 +23,16 @@ class Image : public wxPanel {
     void OnPaint(wxPaintEvent& evt);
     void render(wxDC& dc);
     void OnSize(wxSizeEvent& event);
+    void ChangeLightness(int alpha);
    
    private:
-    wxImage *image;
+    wxImage *static_img;
+    wxImage image;
     wxBitmap resized;
     int width; 
     int height;
     Type type;
+    bool changed;
 };
 
 #endif /* DISKLIST_IMAGE_HPP */

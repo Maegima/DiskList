@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2023-11-21
+ * @date 2023-12-06
  *
  * @copyright Copyright (c) 2023
  *
@@ -32,6 +32,9 @@ CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry ent
     sizer->Add(image, 0);
     sizer->Add(label, 0, wxALIGN_CENTER);
     sizer->AddSpacer(10);
+
+    Bind(wxEVT_ENTER_WINDOW, &CardPanel::OnEnterPanel, this);
+    Bind(wxEVT_LEAVE_WINDOW, &CardPanel::OnLeavePanel, this);
 }
 
 CardPanel::~CardPanel() {
@@ -91,10 +94,10 @@ void CardPanel::OnFileClick(wxMouseEvent &event) {
     std::cout << label->GetLabel() << " " << parent->current << " file\n";
     std::list<std::pair<wxString, wxString>> list;
     list.push_back({"Name", file.path.filename().string()});
-    list.push_back({"Size", wxString() << file.size_str()});
-    list.push_back({"Created", wxString() << file.created_str()});
-    list.push_back({"Modified", wxString() << file.modified_str()});
-    list.push_back({"Accessed", wxString() << file.accessed_str()});
+    list.push_back({"Size", file.size_str()});
+    list.push_back({"Created", file.created_str()});
+    list.push_back({"Modified", file.modified_str()});
+    list.push_back({"Accessed", file.accessed_str()});
     parent->iwindow->FillGrid(list);
 }
 
@@ -200,4 +203,30 @@ void CardPanel::OnFolderRightClick(wxMouseEvent &evt) {
     menu.Append(FOLDER_ORGANIZE, "Organize files...");
     menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFolderMenuClick), NULL, this);
     PopupMenu(&menu);
+}
+
+bool CheckPosition(wxRect rect, wxPoint pos, int box){
+    return rect.GetX() < pos.x - box && rect.GetRight() > pos.x + box 
+    && rect.GetY() < pos.y - box && rect.GetBottom() > pos.y + box;
+}
+
+void CardPanel::OnEnterPanel(wxMouseEvent& event) {
+    this->image->ChangeLightness(130);
+    this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHT));
+    this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
+}
+
+void CardPanel::OnLeavePanel(wxMouseEvent& event) {
+	auto mousePosition = ClientToScreen(event.GetPosition());
+    auto rect = GetScreenRect();
+    if(CheckPosition(rect, mousePosition, 0)){
+        this->image->ChangeLightness(130);
+        this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHT));
+        this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
+    }
+    else{
+        this->image->ChangeLightness(100);
+        this->label->SetBackgroundColour(*wxWHITE);
+        this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_BTNTEXT));
+    }
 }

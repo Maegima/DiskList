@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Image texture loader implementation
  * @version 0.3
- * @date 2023-11-19
+ * @date 2023-12-06
  *
  * @copyright Copyright (c) 2023
  *
@@ -12,16 +12,24 @@
 #include "Image.hpp"
 
 Image::Image(wxWindow* parent, wxImage *image, Type type) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
-    this->image = image;
+    this->static_img = image;
+    this->image = *static_img;
     this->type = type;
     width = -1;
     height = -1;
+    changed = false;
     Bind(wxEVT_PAINT, &Image::OnPaint, this, wxID_ANY);
 }
 
 Image::~Image() {
     if(type == Image::Type::DYNAMIC)
-        delete image;
+        delete static_img;
+}
+
+void Image::ChangeLightness(int alpha) {
+    image = static_img->ChangeLightness(alpha);
+    changed = true;
+    Refresh();
 }
 
 void Image::OnPaint(wxPaintEvent& evt) {
@@ -44,15 +52,16 @@ void Image::render(wxDC& dc) {
     int neww, newh;
     dc.GetSize(&neww, &newh);
 
-    if (neww != width || newh != height) {
-        width = image->GetWidth() * ((double)newh / (double)image->GetHeight());
+    if (neww != width || newh != height || changed) {
+        width = image.GetWidth() * ((double)newh / (double)image.GetHeight());
         height = newh;
         if (width > neww) {
-            height = image->GetHeight() * ((double)neww / (double)image->GetWidth());
+            height = image.GetHeight() * ((double)neww / (double)image.GetWidth());
             width = neww;
         }
-        resized = wxBitmap(image->Scale(width, height /*, wxIMAGE_QUALITY_HIGH*/));
+        resized = wxBitmap(image.Scale(width, height /*, wxIMAGE_QUALITY_HIGH*/));
         dc.DrawBitmap(resized, (neww - width) / 2, (newh - height) / 2, false);
+        changed = false;
     } else {
         dc.DrawBitmap(resized, (neww - width) / 2, (newh - height) / 2, false);
     }

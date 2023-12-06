@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.3
- * @date 2023-11-20
+ * @date 2023-11-21
  *
  * @copyright Copyright (c) 2023
  *
@@ -31,6 +31,7 @@ class CardPanel : public wxPanel {
     FileInfo file;
     Image* image;
     wxStaticText* label;
+    bool m_mouseInside;
 
     CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry, wxString path = "");
     ~CardPanel();
@@ -38,6 +39,8 @@ class CardPanel : public wxPanel {
     void OnFolderLeftClick(wxMouseEvent& event);
     void OnFolderRightClick(wxMouseEvent& event);
     void OnFolderMenuClick(wxCommandEvent& event);
+    void OnEnterPanel(wxMouseEvent& event);
+    void OnLeavePanel(wxMouseEvent& event);
 
     void OnFileClick(wxMouseEvent& event);
     void OnTextClick(wxMouseEvent& event);
