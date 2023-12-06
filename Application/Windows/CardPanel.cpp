@@ -132,6 +132,7 @@ void CardPanel::OnFolderMenuClick(wxCommandEvent &evt) {
     switch (eventId) {
         case FOLDER_UNWIND:
             result = FileSystem::UnwindFolder(this->file.path);
+            parent->RefreshPath();
             break;
         case FOLDER_ORGANIZE:
             result = FileSystem::OrganizeFolder(this->file.path, this->parent->config);
@@ -158,6 +159,7 @@ void CardPanel::OnFileMenuClick(wxCommandEvent &evt) {
                     }
                     if (!std::filesystem::exists(new_path)) {
                         std::filesystem::rename(this->file.path, new_path);
+                        parent->RefreshPath();
                     }
                 }
             }

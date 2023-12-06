@@ -44,13 +44,17 @@ void ListingWindow::OnSize(wxSizeEvent& event) {
     event.Skip();
 }
 
-void ListingWindow::ChangePath(std::filesystem::path path) {
+void ListingWindow::ChangePath(std::filesystem::path path) { 
+    this->current = path;
+    RefreshPath();
+}
+
+void ListingWindow::RefreshPath() {
     auto* sizer = this->GetSizer();
     sizer->Clear(true);
     this->cards.clear();
-    this->current = path;
-    if (path.has_parent_path()) {
-        std::filesystem::directory_entry parent_entry(path.parent_path());
+    if (this->current.has_parent_path()) {
+        std::filesystem::directory_entry parent_entry(this->current.parent_path());
         auto card = new CardPanel(this, parent_entry, "..");
         card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
         cards.insert(card);
@@ -73,9 +77,11 @@ void ListingWindow::OnFolderMenuClick(wxCommandEvent &evt) {
     switch (evt.GetId()) {
         case FOLDER_UNWIND:
             result = FileSystem::UnwindFolder(this->current);
+            RefreshPath();
             break;
         case FOLDER_ORGANIZE:
             result = FileSystem::OrganizeFolder(this->current, this->config);
+             RefreshPath();
             break;
     }
     if(!result) {

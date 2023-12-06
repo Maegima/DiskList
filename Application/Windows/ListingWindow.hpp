@@ -27,6 +27,7 @@ class ListingWindow : public wxScrolledWindow {
     void OnFolderMenuClick(wxCommandEvent& event);
     
     void ChangePath(std::filesystem::path path);
+    void RefreshPath();
 
     std::set<CardPanel*, CardPanel::CompareCards> cards;
     std::filesystem::path current;
