@@ -31,18 +31,33 @@ FileSystem::Result FileSystem::Move(const std::filesystem::path &path, const std
 }
 
 FileSystem::Result FileSystem::OrganizeFolder(const std::filesystem::path &path, const Configuration &config) {
+    return OrganizeFolder(path, path, config);
+}
+
+FileSystem::Result FileSystem::OrganizeFolder(const std::filesystem::path &root, const std::filesystem::path &path, const Configuration &config) {
     FileSystem::Result result;
-    std::filesystem::path folder = path;
-    for (auto const &entry : std::filesystem::directory_iterator{path}) {
-        std::filesystem::path filename = entry.path().filename();
-        if (entry.is_regular_file()) {
-            try {
-                MoveEntry(entry, config);
-            } catch (std::filesystem::filesystem_error &e) {
-                result.errors.push_back(entry.path().filename().string() + ": " + e.what());
+    std::map<std::string, std::list<std::filesystem::path>*> folder_names;
+    auto files_to_organize = GetFiles(path);
+    for (auto const &file : files_to_organize) {
+        try {
+            auto move_folder = GetOrganizerFolder(file, config);
+            auto move_path = move_folder != "" ? root / move_folder : root;
+            if(!folder_names.contains(move_folder)) {
+                if (!std::filesystem::exists(move_path)) {
+                    std::filesystem::create_directory(move_path);
+                }
+                auto listname = GetNames(move_path);
+                folder_names[move_folder] = new std::list<std::filesystem::path>(listname);
             }
-        } else if (entry.is_directory() && !config.organize.contains(filename)) {
-            result.errors.splice(result.errors.end(), OrganizeFolder(entry, config).errors);
+            auto current_names = folder_names[move_folder];
+            if (move_path != file.parent_path()) {
+                auto filename = GetUniqueName(*current_names, file);
+                move_path /= filename;
+                std::filesystem::rename(file, move_path);
+                current_names->push_back(filename);
+            }
+        } catch (std::filesystem::filesystem_error &e) {
+            result.errors.push_back(file.filename().string() + ": " + e.what());
         }
     }
     return result;
@@ -54,13 +69,7 @@ FileSystem::Result FileSystem::UnwindFolder(const std::filesystem::path &path) {
     auto files_to_unwind = GetFiles(path);
     auto current_names = GetNames(parent);
     for (auto const &file : files_to_unwind) {
-        int count = 1;
-        std::string stem = file.filename().stem();
-        std::string extension = file.filename().extension();
-        std::string filename = file.filename();
-        while (std::find(current_names.begin(), current_names.end(), filename) != current_names.end()) {
-            filename = stem + "(" + std::to_string(count++) + ")" + extension;
-        }
+        auto filename = GetUniqueName(current_names, file);
         current_names.push_back(filename);
         std::filesystem::path new_path = parent / filename;
         try {
@@ -97,20 +106,24 @@ std::list<std::filesystem::path> FileSystem::GetNames(const std::filesystem::pat
     return names;
 }
 
-void FileSystem::MoveEntry(const std::filesystem::path &entry, const Configuration &config) {
+std::string FileSystem::GetUniqueName(const std::list<std::filesystem::path> &names, const std::filesystem::path &file) {
+    std::string filename = file.filename();
+    std::string stem = file.filename().stem();
+    std::string extension = file.filename().extension();
+    int count = 1;
+    while (std::find(names.begin(), names.end(), filename) != names.end()) {
+        filename = stem + "(" + std::to_string(count++) + ")" + extension;
+    }
+    return filename;
+}
+
+std::string FileSystem::GetOrganizerFolder(const std::filesystem::path &entry, const Configuration &config) {
     std::string extension = entry.extension().string();
     std::filesystem::path path = entry.parent_path();
     for (const auto &[key, list] : config.organize) {
         if (std::find(list.begin(), list.end(), extension) != list.end()) {
-            path /= key;
-            break;
+            return key;
         }
     }
-    path /= entry.filename().c_str();
-    if (path != entry) {
-        if (!std::filesystem::exists(path.parent_path())) {
-            std::filesystem::create_directory(path.parent_path());
-        }
-        std::filesystem::rename(entry, path);
-    }
+    return "";
 }

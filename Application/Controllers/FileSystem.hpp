@@ -28,12 +28,14 @@ class FileSystem {
     };
     static Result Move(const std::filesystem::path &path, const std::filesystem::path &folder);
     static Result OrganizeFolder(const std::filesystem::path &path, const Configuration &config);
+    static Result OrganizeFolder(const std::filesystem::path &root, const std::filesystem::path &path, const Configuration &config);
     static Result UnwindFolder(const std::filesystem::path &path);
 
    private:
     static std::list<std::filesystem::path> GetFiles(const std::filesystem::path &path);
     static std::list<std::filesystem::path> GetNames(const std::filesystem::path &path);
-    static void MoveEntry(const std::filesystem::path &entry, const Configuration &config);
+    static std::string GetUniqueName(const std::list<std::filesystem::path> &names, const std::filesystem::path &file);
+    static std::string GetOrganizerFolder(const std::filesystem::path &entry, const Configuration &config);
 };
 
 #endif  // _FILESYSTEM_HPP_
