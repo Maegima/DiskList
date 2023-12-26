@@ -1,8 +1,8 @@
 /**
  * @file FileSystem.cpp
- * @author your name (you@domain.com)
+ * @author André Lucas Maegima
  * @brief FileSystem utility class
- * @version 0.1
+ * @version 0.3
  * @date 2023-12-06
  *
  * @copyright Copyright (c) 2023
@@ -11,6 +11,24 @@
 
 #include "FileSystem.hpp"
 #include <algorithm>
+
+FileSystem::Result FileSystem::Move(const std::filesystem::path &path, const std::filesystem::path &folder) {
+    FileSystem::Result result;
+    std::filesystem::path new_path = folder / path.filename();
+    try {
+        if (!std::filesystem::exists(folder)) {
+            std::filesystem::create_directory(folder);
+        }
+        if (!std::filesystem::exists(new_path)) {
+            std::filesystem::rename(path, new_path);
+        } else {
+            result.errors.push_back(path.filename().string() + ": failed to move!");
+        }
+    } catch (const std::filesystem::filesystem_error &e) {
+        result.errors.push_back(path.filename().string() + ": " + e.what());
+    }
+    return result;
+}
 
 FileSystem::Result FileSystem::OrganizeFolder(const std::filesystem::path &path, const Configuration &config) {
     FileSystem::Result result;

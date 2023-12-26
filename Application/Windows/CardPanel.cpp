@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2023-12-06
+ * @date 2023-12-21
  *
  * @copyright Copyright (c) 2023
  *
@@ -79,8 +79,12 @@ Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
     } else if (extension == ".png") {
         wxString path = wxString::FromUTF8(entry.path());
         img = new Image(this, new wxImage(path, wxBITMAP_TYPE_PNG), Image::Type::DYNAMIC);
+        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
+        img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     } else if (default_images.contains(extension)) {
         img = new Image(this, default_images[extension]);
+        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
+        img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     } else {
         img = new Image(this, default_images["default"]);
         img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
@@ -112,6 +116,7 @@ void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
 
 void CardPanel::OnFileRightClick(wxMouseEvent &event) {
     wxMenu menu;
+    menu.Append(MOVE_TO_ROOT, "Move to root...");
     for (auto event : this->parent->config.folder) {
         menu.Append(event.first, "Move to " + event.second.second);
     }
@@ -130,6 +135,10 @@ void CardPanel::OnFolderMenuClick(wxCommandEvent &evt) {
     FileSystem::Result result;
     int eventId = evt.GetId();
     switch (eventId) {
+        case MOVE_TO_ROOT:
+            result = FileSystem::Move(this->file.path, this->parent->config.config["root"]);
+            parent->RefreshPath();
+            break;
         case FOLDER_UNWIND:
             result = FileSystem::UnwindFolder(this->file.path);
             parent->RefreshPath();
@@ -147,27 +156,31 @@ void CardPanel::OnFolderMenuClick(wxCommandEvent &evt) {
 
 void CardPanel::OnFileMenuClick(wxCommandEvent &evt) {
     int eventId = evt.GetId();
+    FileSystem::Result result;
     switch (eventId) {
+        case MOVE_TO_ROOT:
+            result = FileSystem::Move(this->file.path, this->parent->config.config["root"]);
+            parent->RefreshPath();
         default:
             if (eventId > 2000 && eventId < 3000) {
                 if (this->parent->config.folder.contains(eventId)) {
                     std::filesystem::path folder = this->parent->config.folder[eventId].first;
-                    std::filesystem::path move_path = this->file.path.parent_path() / folder;
-                    std::filesystem::path new_path = move_path / this->file.path.filename();
-                    if (!std::filesystem::exists(move_path)) {
-                        std::filesystem::create_directory(move_path);
-                    }
-                    if (!std::filesystem::exists(new_path)) {
-                        std::filesystem::rename(this->file.path, new_path);
-                        parent->RefreshPath();
-                    }
+                    result = FileSystem::Move(this->file.path, this->file.path.parent_path() / folder);
                 }
             }
+    }
+    if(result){
+        parent->RefreshPath();
+    } else {
+        for(auto const &error : result.errors) {
+            wxLogWarning(wxString(error));
+        }
     }
 }
 
 void CardPanel::OnFolderRightClick(wxMouseEvent &evt) {
     wxMenu menu;
+    menu.Append(MOVE_TO_ROOT, "Move to root...");
     menu.Append(FOLDER_UNWIND, "Unwind files...");
     menu.Append(FOLDER_ORGANIZE, "Organize files...");
     menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFolderMenuClick), NULL, this);

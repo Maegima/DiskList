@@ -1,8 +1,8 @@
 /**
  * @file FileSystem.hpp
- * @author your name (you@domain.com)
+ * @author André Lucas Maegima
  * @brief FileSystem utility class
- * @version 0.1
+ * @version 0.3
  * @date 2023-12-06
  *
  * @copyright Copyright (c) 2023
@@ -26,6 +26,7 @@ class FileSystem {
         inline bool success() const { return this->errors.size() == 0; };
         inline operator bool() const { return success(); };
     };
+    static Result Move(const std::filesystem::path &path, const std::filesystem::path &folder);
     static Result OrganizeFolder(const std::filesystem::path &path, const Configuration &config);
     static Result UnwindFolder(const std::filesystem::path &path);
 

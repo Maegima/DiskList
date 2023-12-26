@@ -21,8 +21,9 @@
 class ListingWindow;
 
 enum {
-    FOLDER_UNWIND = 2500,
-    FOLDER_ORGANIZE = 2501
+    MOVE_TO_ROOT = 2500,
+    FOLDER_UNWIND = 2501,
+    FOLDER_ORGANIZE = 2502
 };
 
 class CardPanel : public wxPanel {

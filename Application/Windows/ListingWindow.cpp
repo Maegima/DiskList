@@ -25,7 +25,7 @@ ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID i
 
     wxWrapSizer* sizer = new wxWrapSizer(wxHORIZONTAL);
     SetSizer(sizer);
-    ChangePath(std::filesystem::current_path());
+    ChangePath(config.config["root"]);
 
     this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
 }
