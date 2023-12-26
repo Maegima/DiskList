@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Configuration file class implementation
  * @version 0.3
- * @date 2023-12-06
+ * @date 2023-12-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -53,7 +53,11 @@ Configuration::Configuration(const std::string path) : file(std::fstream(path, s
                 }
             } else if (space == "image") {
                 for (auto &[key, value] : items) {
-                    image.insert({key, value});
+                    if(key == "dynamic") {
+                        image_extension = split(value, ',');
+                    } else {
+                        image.insert({key, value});
+                    }
                 }
             }
         }

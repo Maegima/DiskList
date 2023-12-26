@@ -71,14 +71,15 @@ wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxS
 
 Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
     Image *img = nullptr;
+    std::vector<std::string> img_exts = parent->config.image_extension;
     std::string extension = entry.path().extension().string();
     if (entry.is_directory()) {
         img = new Image(this, default_images["folder"]);
         img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFolderLeftClick, this, wxID_ANY);
         img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFolderRightClick, this, wxID_ANY);
-    } else if (extension == ".png") {
+    } else if (std::find(img_exts.begin(), img_exts.end(), extension) != img_exts.end()) {
         wxString path = wxString::FromUTF8(entry.path());
-        img = new Image(this, new wxImage(path, wxBITMAP_TYPE_PNG), Image::Type::DYNAMIC);
+        img = new Image(this, new wxImage(path, wxBITMAP_TYPE_ANY), Image::Type::DYNAMIC);
         img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
         img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     } else if (default_images.contains(extension)) {

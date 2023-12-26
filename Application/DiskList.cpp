@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Folder listing program with md5 checksum.
  * @version 0.3
- * @date 2023-11-20
+ * @date 2023-12-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -66,6 +66,7 @@ wxAppInitializer wxTheAppInitializer((wxAppInitializerFunction) new Application)
 int main(int argc, char *argv[]) {
     if (argc == 1) {
         wxImage::AddHandler(new wxPNGHandler());
+        wxImage::AddHandler(new wxJPEGHandler());
         return wxEntry(argc, argv);
     }
     std::string command = argv[1];

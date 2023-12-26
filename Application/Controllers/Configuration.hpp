@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Configuration file class definition
  * @version 0.3
- * @date 2023-12-06
+ * @date 2023-12-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -23,6 +23,7 @@ class Configuration {
     std::map<int, std::pair<std::string, std::string>> folder;
     std::map<std::string, std::vector<std::string>> organize;
     std::map<std::string, std::string> image;
+    std::vector<std::string> image_extension;
 
     Configuration(const std::string path);
 
