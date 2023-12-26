@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Listing window implementation
  * @version 0.3
- * @date 2023-12-06
+ * @date 2023-12-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -83,6 +83,10 @@ void ListingWindow::OnFolderMenuClick(wxCommandEvent &evt) {
             result = FileSystem::OrganizeFolder(this->current, this->config);
              RefreshPath();
             break;
+        case DELETE_EMPTY_FOLDERS:
+            result = FileSystem::DeleteEmptyFolders(this->current);
+             RefreshPath();
+            break;
     }
     if(!result) {
         for(auto const &error : result.errors) {
@@ -95,6 +99,7 @@ void ListingWindow::OnFolderRightClick(wxMouseEvent &evt) {
     wxMenu menu;
     menu.Append(FOLDER_UNWIND, "Unwind folder...");
     menu.Append(FOLDER_ORGANIZE, "Organize folder...");
+    menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ListingWindow::OnFolderMenuClick), NULL, this);
     PopupMenu(&menu);
 }

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2023-12-21
+ * @date 2023-12-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -147,6 +147,9 @@ void CardPanel::OnFolderMenuClick(wxCommandEvent &evt) {
         case FOLDER_ORGANIZE:
             result = FileSystem::OrganizeFolder(this->file.path, this->parent->config);
             break;
+        case DELETE_EMPTY_FOLDERS:
+            result = FileSystem::DeleteEmptyFolders(this->file.path);
+            break;
     }
     if(!result) {
         for(auto const &error : result.errors) {
@@ -184,6 +187,7 @@ void CardPanel::OnFolderRightClick(wxMouseEvent &evt) {
     menu.Append(MOVE_TO_ROOT, "Move to root...");
     menu.Append(FOLDER_UNWIND, "Unwind files...");
     menu.Append(FOLDER_ORGANIZE, "Organize files...");
+    menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFolderMenuClick), NULL, this);
     PopupMenu(&menu);
 }

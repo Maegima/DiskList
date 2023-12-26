@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief FileSystem utility class
  * @version 0.3
- * @date 2023-12-06
+ * @date 2023-12-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -30,6 +30,7 @@ class FileSystem {
     static Result OrganizeFolder(const std::filesystem::path &path, const Configuration &config);
     static Result OrganizeFolder(const std::filesystem::path &root, const std::filesystem::path &path, const Configuration &config);
     static Result UnwindFolder(const std::filesystem::path &path);
+    static Result DeleteEmptyFolders(const std::filesystem::path &path);
 
    private:
     static std::list<std::filesystem::path> GetFiles(const std::filesystem::path &path);

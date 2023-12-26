@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.3
- * @date 2023-11-21
+ * @date 2023-12-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -23,7 +23,8 @@ class ListingWindow;
 enum {
     MOVE_TO_ROOT = 2500,
     FOLDER_UNWIND = 2501,
-    FOLDER_ORGANIZE = 2502
+    FOLDER_ORGANIZE = 2502,
+    DELETE_EMPTY_FOLDERS = 2503
 };
 
 class CardPanel : public wxPanel {

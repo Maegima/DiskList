@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief FileSystem utility class
  * @version 0.3
- * @date 2023-12-06
+ * @date 2023-12-26
  *
  * @copyright Copyright (c) 2023
  *
@@ -36,13 +36,13 @@ FileSystem::Result FileSystem::OrganizeFolder(const std::filesystem::path &path,
 
 FileSystem::Result FileSystem::OrganizeFolder(const std::filesystem::path &root, const std::filesystem::path &path, const Configuration &config) {
     FileSystem::Result result;
-    std::map<std::string, std::list<std::filesystem::path>*> folder_names;
+    std::map<std::string, std::list<std::filesystem::path> *> folder_names;
     auto files_to_organize = GetFiles(path);
     for (auto const &file : files_to_organize) {
         try {
             auto move_folder = GetOrganizerFolder(file, config);
             auto move_path = move_folder != "" ? root / move_folder : root;
-            if(!folder_names.contains(move_folder)) {
+            if (!folder_names.contains(move_folder)) {
                 if (!std::filesystem::exists(move_path)) {
                     std::filesystem::create_directory(move_path);
                 }
@@ -80,6 +80,23 @@ FileSystem::Result FileSystem::UnwindFolder(const std::filesystem::path &path) {
             }
         } catch (std::filesystem::filesystem_error &e) {
             result.errors.push_back(filename + ": " + e.what());
+        }
+    }
+    return result;
+}
+
+FileSystem::Result FileSystem::DeleteEmptyFolders(const std::filesystem::path &path) {
+    FileSystem::Result result;
+    for (auto const &entry : std::filesystem::directory_iterator{path}) {
+        if (entry.is_directory()) {
+            result.errors.splice(result.errors.end(), DeleteEmptyFolders(entry).errors);
+            try {
+                if (std::filesystem::is_empty(entry)) {
+                    std::filesystem::remove(entry);
+                }
+            } catch (const std::filesystem::filesystem_error &e) {
+                result.errors.push_back(entry.path().filename().string() + ": " + e.what());
+            }
         }
     }
     return result;
