@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Listing window implementation
  * @version 0.3
- * @date 2023-12-26
+ * @date 2023-12-27
  *
  * @copyright Copyright (c) 2023
  *
@@ -80,7 +80,7 @@ void ListingWindow::OnFolderMenuClick(wxCommandEvent &evt) {
             RefreshPath();
             break;
         case FOLDER_ORGANIZE:
-            result = FileSystem::OrganizeFolder(this->current, this->config);
+            result = FileSystem::OrganizeCurrentFolder(this->current, this->config);
              RefreshPath();
             break;
         case DELETE_EMPTY_FOLDERS:

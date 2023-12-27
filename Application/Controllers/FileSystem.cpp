@@ -31,14 +31,18 @@ FileSystem::Result FileSystem::Move(const std::filesystem::path &path, const std
     return result;
 }
 
+FileSystem::Result FileSystem::OrganizeCurrentFolder(const std::filesystem::path &path, const Configuration &config) {
+    return OrganizeFolder(path, path, config, false);
+}
+
 FileSystem::Result FileSystem::OrganizeFolder(const std::filesystem::path &path, const Configuration &config) {
     return OrganizeFolder(path, path, config);
 }
 
-FileSystem::Result FileSystem::OrganizeFolder(const std::filesystem::path &root, const std::filesystem::path &path, const Configuration &config) {
+FileSystem::Result FileSystem::OrganizeFolder(const std::filesystem::path &root, const std::filesystem::path &path, const Configuration &config, bool recursive) {
     FileSystem::Result result;
     std::map<std::string, std::list<std::filesystem::path> *> folder_names;
-    auto files_to_organize = GetFiles(path);
+    auto files_to_organize = GetFiles(path, recursive);
     for (auto const &file : files_to_organize) {
         try {
             auto move_folder = GetOrganizerFolder(file, config);
@@ -103,12 +107,12 @@ FileSystem::Result FileSystem::DeleteEmptyFolders(const std::filesystem::path &p
     return result;
 }
 
-std::list<std::filesystem::path> FileSystem::GetFiles(const std::filesystem::path &path) {
+std::list<std::filesystem::path> FileSystem::GetFiles(const std::filesystem::path &path, bool recursive) {
     std::list<std::filesystem::path> files;
     for (auto const &entry : std::filesystem::directory_iterator{path}) {
         if (entry.is_regular_file()) {
             files.push_back(entry);
-        } else if (entry.is_directory()) {
+        } else if (entry.is_directory() && recursive) {
             files.splice(files.end(), GetFiles(entry));
         }
     }
