@@ -53,7 +53,7 @@ void ListingWindow::RefreshPath() {
     auto* sizer = this->GetSizer();
     sizer->Clear(true);
     this->cards.clear();
-    if (this->current.has_parent_path()) {
+    if (this->current.has_parent_path() && this->current != this->config.config["root"]) {
         std::filesystem::directory_entry parent_entry(this->current.parent_path());
         auto card = new CardPanel(this, parent_entry, "..");
         card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
