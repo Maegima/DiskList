@@ -117,11 +117,13 @@ void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
 
 void CardPanel::OnFileRightClick(wxMouseEvent &event) {
     wxMenu menu;
-    menu.Append(MOVE_TO_ROOT, "Move to root...");
+    wxMenu *moveMenu = new wxMenu();
+    moveMenu->Append(MOVE_TO_ROOT, "root");
     for (auto event : this->parent->config.folder) {
-        menu.Append(event.first, "Move to " + event.second.second);
+        moveMenu->Append(event.first, event.second.second);
     }
-    menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFileMenuClick), NULL, this);
+    menu.AppendSubMenu(moveMenu, "Move to...");
+    moveMenu->Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFileMenuClick), NULL, this);
     PopupMenu(&menu);
 }
 
@@ -164,7 +166,7 @@ void CardPanel::OnFileMenuClick(wxCommandEvent &evt) {
     switch (eventId) {
         case MOVE_TO_ROOT:
             result = FileSystem::Move(this->file.path, this->parent->config.config["root"]);
-            parent->RefreshPath();
+            break;
         default:
             if (eventId > 2000 && eventId < 2500) {
                 if (this->parent->config.folder.contains(eventId)) {
@@ -184,10 +186,16 @@ void CardPanel::OnFileMenuClick(wxCommandEvent &evt) {
 
 void CardPanel::OnFolderRightClick(wxMouseEvent &evt) {
     wxMenu menu;
-    menu.Append(MOVE_TO_ROOT, "Move to root...");
     menu.Append(FOLDER_UNWIND, "Unwind files...");
     menu.Append(FOLDER_ORGANIZE, "Organize files...");
     menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
+    wxMenu *moveMenu = new wxMenu();
+    moveMenu->Append(MOVE_TO_ROOT, "root");
+    for (auto event : this->parent->config.folder) {
+        moveMenu->Append(event.first, event.second.second);
+    }
+    menu.AppendSubMenu(moveMenu, "Move to...");
+    moveMenu->Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFileMenuClick), NULL, this);
     menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnFolderMenuClick), NULL, this);
     PopupMenu(&menu);
 }
