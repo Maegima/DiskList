@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.3
- * @date 2023-12-06
+ * @date 2023-12-27
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -33,5 +33,7 @@ class ListingWindow : public wxScrolledWindow {
     std::filesystem::path current;
     InfoWindow *iwindow;
     Configuration config;
+    int selected_folders;
+    int selected_files;
 };
 #endif // _LISTINGWINDOW_HPP_

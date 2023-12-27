@@ -40,15 +40,14 @@ class CardPanel : public wxPanel {
     ~CardPanel();
 
     void OnFolderLeftClick(wxMouseEvent& event);
-    void OnFolderRightClick(wxMouseEvent& event);
+    void OnFileLeftClick(wxMouseEvent& event);
+
     void OnEnterPanel(wxMouseEvent& event);
     void OnLeavePanel(wxMouseEvent& event);
 
-    void OnFileLeftClick(wxMouseEvent& event);
-    void OnFileRightClick(wxMouseEvent& event);
-
     void OnMenuClick(wxCommandEvent& event);
     bool MenuEvent(wxCommandEvent& event, const FileInfo &file);
+    void OnRightClick(wxMouseEvent& event);
     void OnLeftClick(wxMouseEvent& event);
     void OnTextClick(wxMouseEvent& event);
 
@@ -62,6 +61,7 @@ class CardPanel : public wxPanel {
     static std::map<std::string, wxImage*> default_images;
     wxStaticText* CreateLabel(std::filesystem::directory_entry entry, wxString path);
     Image* CreateImage(std::filesystem::directory_entry entry);
+    void SelectItem(bool select);
 };
 
 #endif  // _CARDPANEL_HPP_

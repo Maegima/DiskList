@@ -61,13 +61,12 @@ wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxS
         max_text_size -= 10;
     }
     if (entry.is_directory()) {
-        text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFolderLeftClick, this, wxID_ANY);
-        text->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFolderRightClick, this, wxID_ANY);
+        text->Bind(wxEVT_LEFT_DCLICK, &CardPanel::OnFolderLeftClick, this, wxID_ANY);
     } else {
         text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
-        text->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     }
     text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnTextClick, this, wxID_ANY);
+    text->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnRightClick, this, wxID_ANY);
     return text;
 }
 
@@ -78,33 +77,44 @@ Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
     if (entry.is_directory()) {
         img = new Image(this, default_images["folder"]);
         img->Bind(wxEVT_LEFT_DCLICK, &CardPanel::OnFolderLeftClick, this, wxID_ANY);
-        img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFolderRightClick, this, wxID_ANY);
     } else if (std::find(img_exts.begin(), img_exts.end(), extension) != img_exts.end()) {
         wxString path = wxString::FromUTF8(entry.path());
         img = new Image(this, new wxImage(path, wxBITMAP_TYPE_ANY), Image::Type::DYNAMIC);
         img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
-        img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     } else if (default_images.contains(extension)) {
         img = new Image(this, default_images[extension]);
         img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
-        img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     } else {
         img = new Image(this, default_images["default"]);
         img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
-        img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnFileRightClick, this, wxID_ANY);
     }
     img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnLeftClick, this, wxID_ANY);
+    img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnRightClick, this, wxID_ANY);
     return img;
 }
 
+
 void CardPanel::OnLeftClick(wxMouseEvent &event) {
-    this->selected = !this->selected;
-    if (selected) {
+    SelectItem(!this->selected);
+    event.Skip();
+}
+
+void CardPanel::SelectItem(bool select) {
+    if(this->selected == select){
+        return;
+    }
+    this->selected = select;
+    if (this->selected) {
         this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_GRAYTEXT));
         this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
     } else {
         this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHT));
         this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
+    }
+    if(this->file.type == FileType::Directory) {
+        this->parent->selected_folders += this->selected ? 1 : -1; 
+    } else {
+        this->parent->selected_files += this->selected ? 1 : -1; 
     }
 }
 
@@ -124,19 +134,6 @@ void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
     list.push_back({"Modified", file.modified_str()});
     list.push_back({"Accessed", file.accessed_str()});
     parent->iwindow->FillGrid(list);
-}
-
-void CardPanel::OnFileRightClick(wxMouseEvent &event) {
-    wxMenu menu;
-    wxMenu *moveMenu = new wxMenu();
-    moveMenu->Append(MOVE_TO_ROOT, "root");
-    for (auto event : this->parent->config.folder) {
-        moveMenu->Append(event.first, event.second.second);
-    }
-    menu.AppendSubMenu(moveMenu, "Move to...");
-    moveMenu->Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnMenuClick), NULL, this);
-    this->selected = true;
-    PopupMenu(&menu);
 }
 
 bool CardPanel::CompareCards::operator()(const CardPanel *c1, const CardPanel *c2) const {
@@ -193,11 +190,14 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
     return refresh;
 }
 
-void CardPanel::OnFolderRightClick(wxMouseEvent &evt) {
+void CardPanel::OnRightClick(wxMouseEvent &evt) {
     wxMenu menu;
-    menu.Append(FOLDER_UNWIND, "Unwind files...");
-    menu.Append(FOLDER_ORGANIZE, "Organize files...");
-    menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
+    SelectItem(true);
+    if(parent->selected_folders > 0 && parent->selected_files == 0) {
+        menu.Append(FOLDER_UNWIND, "Unwind files...");
+        menu.Append(FOLDER_ORGANIZE, "Organize files...");
+        menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
+    }
     wxMenu *moveMenu = new wxMenu();
     moveMenu->Append(MOVE_TO_ROOT, "root");
     for (auto event : this->parent->config.folder) {
@@ -206,7 +206,6 @@ void CardPanel::OnFolderRightClick(wxMouseEvent &evt) {
     menu.AppendSubMenu(moveMenu, "Move to...");
     moveMenu->Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnMenuClick), NULL, this);
     menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnMenuClick), NULL, this);
-    this->selected = true;
     PopupMenu(&menu);
 }
 

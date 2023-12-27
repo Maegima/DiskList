@@ -16,7 +16,9 @@
 ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID id, const wxPoint& pos, const wxSize& size)
     : wxScrolledWindow(parent, id, pos, size, wxSUNKEN_BORDER),
       iwindow(iwindow),
-      config(".conf") {
+      config(".conf"),
+      selected_folders(0),
+      selected_files(0) {
     SetBackgroundColour(*wxWHITE);
     CardPanel::InitializeDefaultIcons(config.image);
 
@@ -53,6 +55,8 @@ void ListingWindow::RefreshPath() {
     auto* sizer = this->GetSizer();
     sizer->Clear(true);
     this->cards.clear();
+    this->selected_files = 0;
+    this->selected_folders = 0;
     if (this->current.has_parent_path() && this->current != this->config.config["root"]) {
         std::filesystem::directory_entry parent_entry(this->current.parent_path());
         auto card = new CardPanel(this, parent_entry, "..");
