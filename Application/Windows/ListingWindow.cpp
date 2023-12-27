@@ -20,7 +20,6 @@ ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID i
       selected_folders(0),
       selected_files(0) {
     SetBackgroundColour(*wxWHITE);
-    CardPanel::InitializeDefaultIcons(config.image);
 
     Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
     Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);

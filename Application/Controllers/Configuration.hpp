@@ -16,13 +16,14 @@
 #include <map>
 #include <vector>
 #include <fstream>
+#include <wx/image.h>
 
 class Configuration {
    public:
     std::map<std::string, std::string> config;
     std::map<int, std::pair<std::string, std::string>> folder;
     std::map<std::string, std::vector<std::string>> organize;
-    std::map<std::string, std::string> image;
+    std::map<std::string, wxImage*> image;
     std::vector<std::string> image_extension;
 
     Configuration(const std::string path);

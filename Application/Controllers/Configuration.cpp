@@ -56,7 +56,7 @@ Configuration::Configuration(const std::string path) : file(std::fstream(path, s
                     if(key == "dynamic") {
                         image_extension = split(value, ',');
                     } else {
-                        image.insert({key, value});
+                        image.insert({key, new wxImage(value, wxBITMAP_TYPE_PNG)});
                     }
                 }
             }

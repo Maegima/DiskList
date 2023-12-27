@@ -13,14 +13,6 @@
 #include "ListingWindow.hpp"
 #include "Controllers/FileSystem.hpp"
 
-std::map<std::string, wxImage *> CardPanel::default_images;
-
-void CardPanel::InitializeDefaultIcons(std::map<std::string, std::string> config) {
-    for (auto &[key, value] : config) {
-        default_images.insert({key, new wxImage(value, wxBITMAP_TYPE_PNG)});
-    }
-}
-
 CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry, wxString path)
     : wxPanel(parent, wxID_ANY),
       parent(parent),
@@ -71,21 +63,12 @@ wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxS
 }
 
 Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
-    Image *img = nullptr;
     std::vector<std::string> img_exts = parent->config.image_extension;
     std::string extension = entry.path().extension().string();
+    Image *img = new Image(this, entry, parent->config);
     if (entry.is_directory()) {
-        img = new Image(this, default_images["folder"]);
         img->Bind(wxEVT_LEFT_DCLICK, &CardPanel::OnFolderLeftClick, this, wxID_ANY);
-    } else if (std::find(img_exts.begin(), img_exts.end(), extension) != img_exts.end()) {
-        wxString path = wxString::FromUTF8(entry.path());
-        img = new Image(this, new wxImage(path, wxBITMAP_TYPE_ANY), Image::Type::DYNAMIC);
-        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
-    } else if (default_images.contains(extension)) {
-        img = new Image(this, default_images[extension]);
-        img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
     } else {
-        img = new Image(this, default_images["default"]);
         img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnFileLeftClick, this, wxID_ANY);
     }
     img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnLeftClick, this, wxID_ANY);

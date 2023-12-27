@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Image texture loader implementation
  * @version 0.3
- * @date 2023-12-06
+ * @date 2023-12-27
  *
  * @copyright Copyright (c) 2023
  *
@@ -11,10 +11,25 @@
 
 #include "Image.hpp"
 
-Image::Image(wxWindow* parent, wxImage *image, Type type) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
-    this->static_img = image;
+Image::Image(wxWindow* parent, const std::filesystem::directory_entry &entry, Configuration &config) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
+    std::vector<std::string> img_exts = config.image_extension;
+    std::string extension = entry.path().extension().string();
+    std::string key = "default";
+    if (entry.is_directory()) {
+        key = "folder";
+    } else if (std::find(img_exts.begin(), img_exts.end(), extension) != img_exts.end()) {
+        key = "dynamic";
+    } else if (config.image.contains(extension)) {
+        key = extension;
+    }
+    if(key == "dynamic") {
+        this->type = Type::DYNAMIC; 
+        this->static_img = new wxImage(wxString::FromUTF8(entry.path()), wxBITMAP_TYPE_ANY);
+    } else {
+        this->type = Type::STATIC;
+        this->static_img = config.image[key];
+    }
     this->image = *static_img;
-    this->type = type;
     width = -1;
     height = -1;
     changed = false;

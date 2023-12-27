@@ -51,14 +51,11 @@ class CardPanel : public wxPanel {
     void OnLeftClick(wxMouseEvent& event);
     void OnTextClick(wxMouseEvent& event);
 
-    static void InitializeDefaultIcons(std::map<std::string, std::string> config);
-
     struct CompareCards {
         bool operator()(const CardPanel* c1, const CardPanel* c2) const;
     };
 
    private:
-    static std::map<std::string, wxImage*> default_images;
     wxStaticText* CreateLabel(std::filesystem::directory_entry entry, wxString path);
     Image* CreateImage(std::filesystem::directory_entry entry);
     void SelectItem(bool select);
