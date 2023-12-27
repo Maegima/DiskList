@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief FileSystem utility class
  * @version 0.3
- * @date 2023-12-26
+ * @date 2023-12-27
  *
  * @copyright Copyright (c) 2023
  *
@@ -14,7 +14,8 @@
 
 FileSystem::Result FileSystem::Move(const std::filesystem::path &path, const std::filesystem::path &folder) {
     FileSystem::Result result;
-    std::filesystem::path new_path = folder / path.filename();
+    auto filename = GetUniqueName(GetNames(folder), path);
+    std::filesystem::path new_path = folder / filename;
     try {
         if (!std::filesystem::exists(folder)) {
             std::filesystem::create_directory(folder);
@@ -116,6 +117,9 @@ std::list<std::filesystem::path> FileSystem::GetFiles(const std::filesystem::pat
 
 std::list<std::filesystem::path> FileSystem::GetNames(const std::filesystem::path &path) {
     std::list<std::filesystem::path> names;
+    if(!std::filesystem::exists(path)){
+        return names;
+    }
     for (auto const &entry : std::filesystem::directory_iterator{path}) {
         std::filesystem::path filename = entry.path().filename();
         names.push_back(filename);

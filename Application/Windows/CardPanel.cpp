@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2023-12-26
+ * @date 2023-12-27
  *
  * @copyright Copyright (c) 2023
  *
@@ -166,7 +166,7 @@ void CardPanel::OnFileMenuClick(wxCommandEvent &evt) {
             result = FileSystem::Move(this->file.path, this->parent->config.config["root"]);
             parent->RefreshPath();
         default:
-            if (eventId > 2000 && eventId < 3000) {
+            if (eventId > 2000 && eventId < 2500) {
                 if (this->parent->config.folder.contains(eventId)) {
                     std::filesystem::path folder = this->parent->config.folder[eventId].first;
                     result = FileSystem::Move(this->file.path, this->file.path.parent_path() / folder);
