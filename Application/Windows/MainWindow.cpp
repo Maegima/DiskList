@@ -11,17 +11,17 @@
 
 #include "MainWindow.hpp"
 
-MainWindow::MainWindow() : wxFrame(NULL, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1050, 600)) {
-    wxMenu* menuFile = new wxMenu;
+MainWindow::MainWindow() : wxFrame(NULL, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1200, 600)) {
+    wxMenu *menuFile = new wxMenu;
     this->SetMinSize(wxSize(800, 600));
     menuFile->Append(ID_Hello, "&Hello...\tCtrl-H", "Help string shown in status bar for this menu item");
     menuFile->AppendSeparator();
     menuFile->Append(wxID_EXIT);
 
-    wxMenu* menuHelp = new wxMenu;
+    wxMenu *menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
 
-    wxMenuBar* menuBar = new wxMenuBar;
+    wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menuFile, "&File");
     menuBar->Append(menuHelp, "&Help");
 
@@ -41,18 +41,18 @@ MainWindow::MainWindow() : wxFrame(NULL, wxID_ANY, "Disklist", wxDefaultPosition
 
     sizer->Add(lwindow, wxEXPAND);
     sizer->Add(iwindow);
-    
+
     SetSizer(sizer);
 }
 
-void MainWindow::OnExit(wxCommandEvent& event) {
+void MainWindow::OnExit(wxCommandEvent &event) {
     Close(true);
 }
 
-void MainWindow::OnAbout(wxCommandEvent& event) {
+void MainWindow::OnAbout(wxCommandEvent &event) {
     wxMessageBox("This is a wxWidgets Hello World example", "About Hello World", wxOK | wxICON_INFORMATION);
 }
 
-void MainWindow::OnHello(wxCommandEvent& event) {
+void MainWindow::OnHello(wxCommandEvent &event) {
     wxLogMessage("Hello world from wxWidgets!");
 }

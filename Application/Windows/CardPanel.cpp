@@ -187,8 +187,8 @@ void CardPanel::OnRightClick(wxMouseEvent &evt) {
         moveMenu->Append(event.first, event.second.second);
     }
     menu.AppendSubMenu(moveMenu, "Move to...");
-    moveMenu->Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnMenuClick), NULL, this);
-    menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(CardPanel::OnMenuClick), NULL, this);
+    moveMenu->Connect(wxEVT_MENU, wxCommandEventHandler(CardPanel::OnMenuClick), nullptr, this);
+    menu.Connect(wxEVT_MENU, wxCommandEventHandler(CardPanel::OnMenuClick), nullptr, this);
     PopupMenu(&menu);
 }
 

@@ -103,6 +103,6 @@ void ListingWindow::OnFolderRightClick(wxMouseEvent &evt) {
     menu.Append(FOLDER_UNWIND, "Unwind folder...");
     menu.Append(FOLDER_ORGANIZE, "Organize folder...");
     menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
-    menu.Connect(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ListingWindow::OnFolderMenuClick), NULL, this);
+    menu.Connect(wxEVT_MENU, wxCommandEventHandler(ListingWindow::OnFolderMenuClick), nullptr, this);
     PopupMenu(&menu);
 }
