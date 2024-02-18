@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Listing window implementation
  * @version 0.3
- * @date 2023-12-27
+ * @date 2024-02-18
  *
  * @copyright Copyright (c) 2023
  *
@@ -23,6 +23,7 @@ ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID i
 
     Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
     Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
+    Bind(wxEVT_CHAR_HOOK, &ListingWindow::OnKeyPress, this, wxID_ANY);
 
     wxWrapSizer* sizer = new wxWrapSizer(wxHORIZONTAL);
     SetSizer(sizer);
@@ -45,7 +46,7 @@ void ListingWindow::OnSize(wxSizeEvent& event) {
     event.Skip();
 }
 
-void ListingWindow::ChangePath(std::filesystem::path path) { 
+void ListingWindow::ChangePath(std::filesystem::path path) {
     this->current = path;
     RefreshPath();
 }
@@ -73,9 +74,10 @@ void ListingWindow::RefreshPath() {
     this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
     this->SendSizeEvent();
     this->Refresh();
+    this->SetFocus();
 }
 
-void ListingWindow::OnFolderMenuClick(wxCommandEvent &evt) {
+void ListingWindow::OnFolderMenuClick(wxCommandEvent& evt) {
     FileSystem::Result result;
     switch (evt.GetId()) {
         case FOLDER_UNWIND:
@@ -84,21 +86,32 @@ void ListingWindow::OnFolderMenuClick(wxCommandEvent &evt) {
             break;
         case FOLDER_ORGANIZE:
             result = FileSystem::OrganizeCurrentFolder(this->current, this->config);
-             RefreshPath();
+            RefreshPath();
             break;
         case DELETE_EMPTY_FOLDERS:
             result = FileSystem::DeleteEmptyFolders(this->current);
-             RefreshPath();
+            RefreshPath();
             break;
     }
-    if(!result) {
-        for(auto const &error : result.errors) {
+    if (!result) {
+        for (auto const& error : result.errors) {
             wxLogWarning(wxString(error));
         }
     }
 }
 
-void ListingWindow::OnFolderRightClick(wxMouseEvent &evt) {
+void ListingWindow::OnKeyPress(wxKeyEvent& event) {
+    int uc = event.GetKeyCode();
+    if(event.ControlDown() && uc == 'A') {
+        for (auto const& card : cards) {
+            if(card->file.type == FileType::File && !card->selected) {
+                card->SelectItem(true);
+            }
+        }
+    }
+}
+
+void ListingWindow::OnFolderRightClick(wxMouseEvent& evt) {
     wxMenu menu;
     menu.Append(FOLDER_UNWIND, "Unwind folder...");
     menu.Append(FOLDER_ORGANIZE, "Organize folder...");

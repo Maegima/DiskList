@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.3
- * @date 2023-12-27
+ * @date 2024-02-18
  *
  * @copyright Copyright (c) 2023
  *
@@ -46,7 +46,7 @@ class CardPanel : public wxPanel {
     void OnLeavePanel(wxMouseEvent& event);
 
     void OnMenuClick(wxCommandEvent& event);
-    bool MenuEvent(wxCommandEvent& event, const FileInfo &file);
+    bool MenuEvent(wxCommandEvent& event, const FileInfo& file);
     void OnRightClick(wxMouseEvent& event);
     void OnLeftClick(wxMouseEvent& event);
     void OnTextClick(wxMouseEvent& event);
@@ -55,10 +55,10 @@ class CardPanel : public wxPanel {
         bool operator()(const CardPanel* c1, const CardPanel* c2) const;
     };
 
+    void SelectItem(bool select);
    private:
     wxStaticText* CreateLabel(std::filesystem::directory_entry entry, wxString path);
     Image* CreateImage(std::filesystem::directory_entry entry);
-    void SelectItem(bool select);
 };
 
 #endif  // _CARDPANEL_HPP_
