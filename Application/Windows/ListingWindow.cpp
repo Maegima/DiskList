@@ -80,10 +80,6 @@ void ListingWindow::RefreshPath() {
 void ListingWindow::OnFolderMenuClick(wxCommandEvent& evt) {
     FileSystem::Result result;
     switch (evt.GetId()) {
-        case FOLDER_UNWIND:
-            result = FileSystem::UnwindFolder(this->current);
-            RefreshPath();
-            break;
         case FOLDER_ORGANIZE:
             result = FileSystem::OrganizeCurrentFolder(this->current, this->config);
             RefreshPath();
@@ -113,7 +109,6 @@ void ListingWindow::OnKeyPress(wxKeyEvent& event) {
 
 void ListingWindow::OnFolderRightClick(wxMouseEvent& evt) {
     wxMenu menu;
-    menu.Append(FOLDER_UNWIND, "Unwind folder...");
     menu.Append(FOLDER_ORGANIZE, "Organize folder...");
     menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     menu.Connect(wxEVT_MENU, wxCommandEventHandler(ListingWindow::OnFolderMenuClick), nullptr, this);
