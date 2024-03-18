@@ -3,9 +3,9 @@
  * @author André Lucas Maegima
  * @brief Folder listing program with md5 checksum.
  * @version 0.3
- * @date 2023-12-26
+ * @date 2024-03-18
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -17,6 +17,7 @@
 
 void add_file(std::list<FileInfo> &fs, const std::filesystem::path &path) {
     for (auto const &entry : std::filesystem::directory_iterator{path}) {
+        std::cout << entry.path() << std::endl;
         fs.push_back(FileInfo(entry));
         if (entry.is_directory()) {
             add_file(fs, entry.path());
@@ -108,7 +109,7 @@ int main(int argc, char *argv[]) {
             fe.accessed = (unsigned char *)entry.accessed_str().c_str();
             fe.modified = (unsigned char *)entry.modified_str().c_str();
             fe.created = (unsigned char *)entry.accessed_str().c_str();
-            fe.size = entry.size;
+            fe.size = (unsigned long) entry.size;
             fe.hash = (unsigned char *)entry.md5sumString().c_str();
             fe.type = entry.type;
             fe.path = (unsigned char *)entry.path.c_str();

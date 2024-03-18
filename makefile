@@ -4,11 +4,11 @@ EXECUTABLE = $(BINDIR)/disklist
 
 OBJS_FILES = DiskList.o Application.o Image.o FileInfo.o md5/md5.o Configuration.o FileSystem.o
 OBJS_FILES += MainWindow.o ListingWindow.o CardPanel.o InfoWindow.o
-OBJS_FILES += DBType.o DBInt.o DBText.o DBTypeDict.o DBTable.o FileEntry.o
+OBJS_FILES += DBType.o DBInt.o DBUnsignedLong.o DBText.o DBTypeDict.o DBTable.o FileEntry.o
 OBJS=$(OBJS_FILES:%=$(OBJDIR)/%)
 
 CXX = g++
-CXXFLAGS = -Wall -g -std=c++20 -IApplication `wx-config --cxxflags --libs`
+CXXFLAGS = -Wall -g -std=c++20 -IApplication `wx-config --cxxflags --libs` --coverage
 LINUX_GL_LIBS = -lGL
 LIBS = -lpthread -ldl -lm -lsqlite3
 
@@ -26,7 +26,7 @@ $(OBJDIR)/%.o: Application/Windows/%.cpp $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: Application/Controllers/%.cpp $(OBJDIR) $(OBJDIR)/md5
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -O3 -c $< -o $@
 
 $(OBJDIR)/%.o: Application/Models/DBType/%.cpp $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
