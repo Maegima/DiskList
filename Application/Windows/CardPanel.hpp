@@ -3,9 +3,9 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.3
- * @date 2024-02-18
+ * @date 2024-03-18
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -24,7 +24,8 @@ enum {
     MOVE_TO_ROOT = 2500,
     FOLDER_UNWIND = 2501,
     FOLDER_ORGANIZE = 2502,
-    DELETE_EMPTY_FOLDERS = 2503
+    DELETE_EMPTY_FOLDERS = 2503,
+    SELECT_FOLDER = 2504,
 };
 
 class CardPanel : public wxPanel {

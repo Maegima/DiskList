@@ -3,9 +3,9 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.3
- * @date 2024-02-18
+ * @date 2024-03-19
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -33,6 +33,7 @@ class ListingWindow : public wxScrolledWindow {
     std::set<CardPanel*, CardPanel::CompareCards> cards;
     std::filesystem::path current;
     InfoWindow* iwindow;
+    std::list<std::filesystem::path> last_folders;
     Configuration config;
     int selected_folders;
     int selected_files;

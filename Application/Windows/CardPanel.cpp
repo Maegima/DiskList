@@ -3,15 +3,16 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2023-12-27
+ * @date 2024-03-19
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
 #include "CardPanel.hpp"
 #include "ListingWindow.hpp"
 #include "Controllers/FileSystem.hpp"
+#include "SelectFolderWindow.hpp"
 
 CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry, wxString path)
     : wxPanel(parent, wxID_ANY),
@@ -141,6 +142,7 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
     FileSystem::Result result;
     int eventId = evt.GetId();
     bool refresh = false;
+    SelectFolderWindow *lsw = nullptr;
     switch (eventId) {
         case MOVE_TO_ROOT:
             result = FileSystem::Move(file.path, this->parent->config.config["root"]);
@@ -155,6 +157,10 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
             break;
         case DELETE_EMPTY_FOLDERS:
             result = FileSystem::DeleteEmptyFolders(file.path);
+            break;
+        case SELECT_FOLDER:
+            lsw = new SelectFolderWindow("Select folder:", this->parent->config);
+            lsw->Show();
             break;
         default:
             if (eventId > 2000 && eventId < 2500) {
@@ -182,6 +188,8 @@ void CardPanel::OnRightClick(wxMouseEvent &evt) {
         menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     }
     wxMenu *moveMenu = new wxMenu();
+    moveMenu->Append(SELECT_FOLDER, "Search...");
+    moveMenu->AppendSeparator();
     moveMenu->Append(MOVE_TO_ROOT, "root");
     for (auto event : this->parent->config.folder) {
         moveMenu->Append(event.first, event.second.second);
