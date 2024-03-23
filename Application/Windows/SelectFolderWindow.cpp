@@ -10,24 +10,23 @@
  */
 
 #include "SelectFolderWindow.hpp"
-#include <wx/textdlg.h>
+#include "Controllers/Algorithm.hpp"
 #include <filesystem>
-#include <algorithm>
 
-SelectFolderWindow::SelectFolderWindow(const wxString& title, Configuration &config) : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(400, 350)) {
+SelectFolderWindow::SelectFolderWindow(const wxString& title, Configuration& config) : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(400, 350)) {
     wxPanel* panel = new wxPanel(this, wxID_ANY);
 
     wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 
-    for(auto const& item :config.folder) {
+    for (auto const& item : config.folder) {
         ignore_folders.push_back(item.second.first);
     }
-    
-    listbox = new wxListBox(panel, ID_LISTBOX, wxPoint(-1, -1), wxSize(-1, -1));
+
+    listbox = new wxListBox(panel, wxID_ANY, wxPoint(-1, -1), wxSize(-1, -1));
     for (auto const& entry : std::filesystem::directory_iterator{config.config["root"]}) {
-        if(entry.is_directory()) {
+        if (entry.is_directory()) {
             std::string filename = entry.path().filename().string();
-            if(std::find(ignore_folders.begin(), ignore_folders.end(), filename) == ignore_folders.end()){
+            if (!Algorithm::contains(ignore_folders, filename)) {
                 listbox->Append(filename);
             }
         }
@@ -35,7 +34,7 @@ SelectFolderWindow::SelectFolderWindow(const wxString& title, Configuration &con
 
     vbox->Add(listbox, 1, wxEXPAND | wxALL, 20);
 
-    wxPanel *btn_panel = CreateBtnPanel(panel);
+    wxPanel* btn_panel = CreateBtnPanel(panel);
     vbox->Add(btn_panel, 0, wxEXPAND | wxRIGHT, 20);
     vbox->Add(-1, 20);
 
@@ -45,7 +44,7 @@ SelectFolderWindow::SelectFolderWindow(const wxString& title, Configuration &con
     Center();
 }
 
-wxPanel* SelectFolderWindow::CreateBtnPanel(wxPanel *parent) {
+wxPanel* SelectFolderWindow::CreateBtnPanel(wxPanel* parent) {
     wxPanel* btnPanel = new wxPanel(parent, wxID_ANY);
 
     wxButton* newb = new wxButton(btnPanel, wxID_NEW, "New");
@@ -59,7 +58,7 @@ wxPanel* SelectFolderWindow::CreateBtnPanel(wxPanel *parent) {
     hbox->Add(renameb, 0, wxTOP | wxLEFT, 5);
     hbox->Add(deleteb, 0, wxTOP | wxLEFT, 5);
     hbox->Add(clearb, 0, wxTOP | wxLEFT, 5);
-    
+
     btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnNew, this, wxID_NEW);
     btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnRename, this, wxID_EDIT);
     btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnClear, this, wxID_CLEAR);
@@ -71,8 +70,9 @@ wxPanel* SelectFolderWindow::CreateBtnPanel(wxPanel *parent) {
 
 void SelectFolderWindow::OnNew(wxCommandEvent& event) {
     wxString str = wxGetTextFromUser("Add new item");
-    if (str.Len() > 0)
+    if (str.Len() > 0) {
         listbox->Append(str);
+    }
 }
 
 void SelectFolderWindow::OnRename(wxCommandEvent& event) {

@@ -32,6 +32,4 @@ class SelectFolderWindow : public wxFrame {
     wxPanel *CreateBtnPanel(wxPanel *parent);
 };
 
-const int ID_LISTBOX = 5;
-
 #endif  // _SELECTFOLDERWINDOW_HPP_

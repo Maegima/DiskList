@@ -10,7 +10,7 @@
  */
 
 #include "FileSystem.hpp"
-#include <algorithm>
+#include "Algorithm.hpp"
 
 FileSystem::Result FileSystem::Move(const std::filesystem::path &path, const std::filesystem::path &folder) {
     FileSystem::Result result;
@@ -136,7 +136,7 @@ std::string FileSystem::GetUniqueName(const std::list<std::filesystem::path> &na
     std::string stem = file.filename().stem();
     std::string extension = file.filename().extension();
     int count = 1;
-    while (std::find(names.begin(), names.end(), filename) != names.end()) {
+    while (Algorithm::contains(names, filename)) {
         filename = stem + "(" + std::to_string(count++) + ")" + extension;
     }
     return filename;
@@ -146,7 +146,7 @@ std::string FileSystem::GetOrganizerFolder(const std::filesystem::path &entry, c
     std::string extension = entry.extension().string();
     std::filesystem::path path = entry.parent_path();
     for (const auto &[key, list] : config.organize) {
-        if (std::find(list.begin(), list.end(), extension) != list.end()) {
+        if (Algorithm::contains(list, extension)) {
             return key;
         }
     }

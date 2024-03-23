@@ -10,6 +10,7 @@
  */
 
 #include "Image.hpp"
+#include "Algorithm.hpp"
 
 Image::Image(wxWindow* parent, const std::filesystem::directory_entry &entry, Configuration &config) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
     std::vector<std::string> img_exts = config.image_extension;
@@ -17,7 +18,7 @@ Image::Image(wxWindow* parent, const std::filesystem::directory_entry &entry, Co
     std::string key = "default";
     if (entry.is_directory()) {
         key = "folder";
-    } else if (std::find(img_exts.begin(), img_exts.end(), extension) != img_exts.end()) {
+    } else if (Algorithm::contains(img_exts, extension)) {
         key = "dynamic";
     } else if (config.image.contains(extension)) {
         key = extension;
