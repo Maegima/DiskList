@@ -1,29 +1,30 @@
 /**
- * @file SelectFolderWindow.hpp
+ * @file SelectFolderWindow.cpp
  * @author André Lucas Maegima
  * @brief SelectFolderWindow class implementation
  * @version 0.3
- * @date 2024-03-19
+ * @date 2024-03-23
  *
  * @copyright Copyright (c) 2024
  *
  */
 
+#include "ListingWindow.hpp"
 #include "SelectFolderWindow.hpp"
 #include "Controllers/Algorithm.hpp"
-#include <filesystem>
+#include "Controllers/FileSystem.hpp"
 
-SelectFolderWindow::SelectFolderWindow(const wxString& title, Configuration& config) : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(400, 350)) {
+SelectFolderWindow::SelectFolderWindow(const wxString& title, CardPanel* card)
+    : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(400, 350)), card(card) {
     wxPanel* panel = new wxPanel(this, wxID_ANY);
-
     wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 
-    for (auto const& item : config.folder) {
+    for (auto const& item : card->parent->config.folder) {
         ignore_folders.push_back(item.second.first);
     }
 
     listbox = new wxListBox(panel, wxID_ANY, wxPoint(-1, -1), wxSize(-1, -1));
-    for (auto const& entry : std::filesystem::directory_iterator{config.config["root"]}) {
+    for (auto const& entry : std::filesystem::directory_iterator{card->parent->config.config["root"]}) {
         if (entry.is_directory()) {
             std::string filename = entry.path().filename().string();
             if (!Algorithm::contains(ignore_folders, filename)) {
@@ -50,18 +51,18 @@ wxPanel* SelectFolderWindow::CreateBtnPanel(wxPanel* parent) {
     wxButton* newb = new wxButton(btnPanel, wxID_NEW, "New");
     wxButton* renameb = new wxButton(btnPanel, wxID_EDIT, "Edit");
     wxButton* deleteb = new wxButton(btnPanel, wxID_DELETE, "Delete");
-    wxButton* clearb = new wxButton(btnPanel, wxID_CLEAR, "Clear");
+    wxButton* moveb = new wxButton(btnPanel, wxID_PASTE, "Move");
 
     wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
     hbox->Add(20, -1);
     hbox->Add(newb, 0, wxTOP | wxLEFT, 5);
     hbox->Add(renameb, 0, wxTOP | wxLEFT, 5);
     hbox->Add(deleteb, 0, wxTOP | wxLEFT, 5);
-    hbox->Add(clearb, 0, wxTOP | wxLEFT, 5);
+    hbox->Add(moveb, 0, wxTOP | wxLEFT, 5);
 
     btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnNew, this, wxID_NEW);
     btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnRename, this, wxID_EDIT);
-    btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnClear, this, wxID_CLEAR);
+    btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnMove, this, wxID_PASTE);
     btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnDelete, this, wxID_DELETE);
 
     btnPanel->SetSizer(hbox);
@@ -70,7 +71,7 @@ wxPanel* SelectFolderWindow::CreateBtnPanel(wxPanel* parent) {
 
 void SelectFolderWindow::OnNew(wxCommandEvent& event) {
     wxString str = wxGetTextFromUser("Add new item");
-    if (str.Len() > 0) {
+    if (!listbox->FindString(str, true)) {
         listbox->Append(str);
     }
 }
@@ -91,8 +92,21 @@ void SelectFolderWindow::OnRename(wxCommandEvent& event) {
     }
 }
 
-void SelectFolderWindow::OnClear(wxCommandEvent& event) {
-    listbox->Clear();
+void SelectFolderWindow::OnMove(wxCommandEvent& event) {
+    int sel = listbox->GetSelection();
+    if (sel != -1) {
+        std::filesystem::path root = card->parent->config.config["root"]; 
+        std::cout << card->file.path << " -> " << root / listbox->GetString(sel).ToStdString() << "\n";
+        FileSystem::Result result = FileSystem::Move(card->file.path, root / listbox->GetString(sel).ToStdString());
+        if (!result) {
+            for (auto const &error : result.errors) {
+                wxLogWarning(wxString(error));
+            }
+        }
+        this->card->parent->RefreshPath();
+    }
+    
+    Close();
 }
 
 void SelectFolderWindow::OnDelete(wxCommandEvent& event) {

@@ -1,9 +1,9 @@
 
 /**
  * @file Algorithm.hpp
- * @author your name (you@domain.com)
+ * @author André Lucas Maegima
  * @brief Algorithm namespace definition
- * @version 0.1
+ * @version 0.3
  * @date 2024-03-23
  * 
  * @copyright Copyright (c) 2024

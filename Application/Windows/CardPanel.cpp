@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2024-03-19
+ * @date 2024-03-23
  *
  * @copyright Copyright (c) 2024
  *
@@ -159,7 +159,7 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
             result = FileSystem::DeleteEmptyFolders(file.path);
             break;
         case SELECT_FOLDER:
-            lsw = new SelectFolderWindow("Select folder:", this->parent->config);
+            lsw = new SelectFolderWindow("Select folder:", this);
             lsw->Show();
             break;
         default:
