@@ -3,9 +3,9 @@
  * @author André Lucas Maegima
  * @brief FileSystem utility class
  * @version 0.3
- * @date 2023-12-27
+ * @date 2024-03-23
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -14,6 +14,9 @@
 
 FileSystem::Result FileSystem::Move(const std::filesystem::path &path, const std::filesystem::path &folder) {
     FileSystem::Result result;
+    if(path == folder) {
+        return result;
+    }
     auto filename = GetUniqueName(GetNames(folder), path);
     std::filesystem::path new_path = folder / filename;
     try {
