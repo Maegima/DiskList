@@ -39,7 +39,7 @@ SelectFolderWindow::SelectFolderWindow(const wxString& title, CardPanel* card)
     vbox->Add(btn_panel, 0, wxEXPAND | wxRIGHT, 20);
     vbox->Add(-1, 20);
 
-    Bind(wxEVT_LISTBOX_DCLICK, &SelectFolderWindow::OnRename, this);
+    Bind(wxEVT_LISTBOX_DCLICK, &SelectFolderWindow::OnMove, this);
 
     panel->SetSizer(vbox);
     Center();
@@ -48,22 +48,16 @@ SelectFolderWindow::SelectFolderWindow(const wxString& title, CardPanel* card)
 wxPanel* SelectFolderWindow::CreateBtnPanel(wxPanel* parent) {
     wxPanel* btnPanel = new wxPanel(parent, wxID_ANY);
 
-    wxButton* newb = new wxButton(btnPanel, wxID_NEW, "New");
-    wxButton* renameb = new wxButton(btnPanel, wxID_EDIT, "Edit");
-    wxButton* deleteb = new wxButton(btnPanel, wxID_DELETE, "Delete");
-    wxButton* moveb = new wxButton(btnPanel, wxID_PASTE, "Move");
+    wxButton* newb = new wxButton(btnPanel, wxID_NEW);
+    wxButton* moveb = new wxButton(btnPanel, wxID_APPLY);
 
     wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-    hbox->Add(20, -1);
+    hbox->AddStretchSpacer();
     hbox->Add(newb, 0, wxTOP | wxLEFT, 5);
-    hbox->Add(renameb, 0, wxTOP | wxLEFT, 5);
-    hbox->Add(deleteb, 0, wxTOP | wxLEFT, 5);
     hbox->Add(moveb, 0, wxTOP | wxLEFT, 5);
 
     btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnNew, this, wxID_NEW);
-    btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnRename, this, wxID_EDIT);
-    btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnMove, this, wxID_PASTE);
-    btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnDelete, this, wxID_DELETE);
+    btnPanel->Bind(wxEVT_BUTTON, &SelectFolderWindow::OnMove, this, wxID_APPLY);
 
     btnPanel->SetSizer(hbox);
     return btnPanel;
@@ -71,24 +65,8 @@ wxPanel* SelectFolderWindow::CreateBtnPanel(wxPanel* parent) {
 
 void SelectFolderWindow::OnNew(wxCommandEvent& event) {
     wxString str = wxGetTextFromUser("Add new item");
-    if (!listbox->FindString(str, true)) {
+    if (listbox->FindString(str, true) == -1) {
         listbox->Append(str);
-    }
-}
-
-void SelectFolderWindow::OnRename(wxCommandEvent& event) {
-    wxString text;
-    wxString renamed;
-
-    int sel = listbox->GetSelection();
-    if (sel != -1) {
-        text = listbox->GetString(sel);
-        renamed = wxGetTextFromUser("Rename item", "Rename dialog", text);
-    }
-
-    if (!renamed.IsEmpty()) {
-        listbox->Delete(sel);
-        listbox->Insert(renamed, sel);
     }
 }
 
@@ -96,7 +74,6 @@ void SelectFolderWindow::OnMove(wxCommandEvent& event) {
     int sel = listbox->GetSelection();
     if (sel != -1) {
         std::filesystem::path root = card->parent->config.config["root"]; 
-        std::cout << card->file.path << " -> " << root / listbox->GetString(sel).ToStdString() << "\n";
         FileSystem::Result result = FileSystem::Move(card->file.path, root / listbox->GetString(sel).ToStdString());
         if (!result) {
             for (auto const &error : result.errors) {
@@ -107,11 +84,4 @@ void SelectFolderWindow::OnMove(wxCommandEvent& event) {
     }
     
     Close();
-}
-
-void SelectFolderWindow::OnDelete(wxCommandEvent& event) {
-    int sel = listbox->GetSelection();
-    if (sel != -1) {
-        listbox->Delete(sel);
-    }
 }

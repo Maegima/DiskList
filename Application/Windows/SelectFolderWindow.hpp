@@ -23,9 +23,7 @@ class SelectFolderWindow : public wxFrame {
     SelectFolderWindow(const wxString &title, CardPanel *card);
 
     void OnNew(wxCommandEvent &event);
-    void OnRename(wxCommandEvent &event);
     void OnMove(wxCommandEvent &event);
-    void OnDelete(wxCommandEvent &event);
 
    private:
     wxListBox *listbox;
