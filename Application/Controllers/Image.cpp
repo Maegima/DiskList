@@ -3,16 +3,16 @@
  * @author André Lucas Maegima
  * @brief Image texture loader implementation
  * @version 0.3
- * @date 2023-12-27
+ * @date 2024-03-29
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
 #include "Image.hpp"
 #include "Algorithm.hpp"
 
-Image::Image(wxWindow* parent, const std::filesystem::directory_entry &entry, Configuration &config) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
+Image::Image(wxWindow* parent, const std::filesystem::directory_entry& entry, Configuration& config) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
     std::vector<std::string> img_exts = config.image_extension;
     std::string extension = entry.path().extension().string();
     std::string key = "default";
@@ -23,9 +23,17 @@ Image::Image(wxWindow* parent, const std::filesystem::directory_entry &entry, Co
     } else if (config.image.contains(extension)) {
         key = extension;
     }
-    if(key == "dynamic") {
-        this->type = Type::DYNAMIC; 
-        this->static_img = new wxImage(wxString::FromUTF8(entry.path()), wxBITMAP_TYPE_ANY);
+    if (key == "dynamic") {
+        this->static_img = new wxImage();
+        this->static_img->SetLoadFlags(0);
+        if (this->static_img->LoadFile(wxString::FromUTF8(entry.path()), wxBITMAP_TYPE_ANY)) {
+            this->type = Type::DYNAMIC;
+        } else {
+            delete this->static_img;
+            this->static_img = config.image["default"];
+            this->type = Type::STATIC;
+        }
+
     } else {
         this->type = Type::STATIC;
         this->static_img = config.image[key];
@@ -38,7 +46,7 @@ Image::Image(wxWindow* parent, const std::filesystem::directory_entry &entry, Co
 }
 
 Image::~Image() {
-    if(type == Image::Type::DYNAMIC)
+    if (type == Image::Type::DYNAMIC)
         delete static_img;
 }
 
