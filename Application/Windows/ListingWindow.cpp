@@ -58,18 +58,18 @@ void ListingWindow::RefreshPath() {
     this->cards.clear();
     this->selected_files = 0;
     this->selected_folders = 0;
-    if (this->current.has_parent_path() && this->current != this->config.config["root"]) {
-        std::filesystem::directory_entry parent_entry(this->current.parent_path());
-        auto card = new CardPanel(this, parent_entry, "..");
-        card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
-        cards.push_back(card);
-    }
     for (auto const& entry : std::filesystem::directory_iterator{current}) {
         auto card = new CardPanel(this, entry);
         card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
         cards.push_back(card);
     }
     cards.sort(CardPanel::CompareCards());
+    if (this->current.has_parent_path() && this->current != this->config.config["root"]) {
+        std::filesystem::directory_entry parent_entry(this->current.parent_path());
+        auto card = new CardPanel(this, parent_entry, "..");
+        card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
+        cards.push_front(card);
+    }
     for (auto const& card : cards) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
     }
