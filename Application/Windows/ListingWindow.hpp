@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.3
- * @date 2024-03-19
+ * @date 2024-03-29
  *
  * @copyright Copyright (c) 2024
  *
@@ -37,5 +37,6 @@ class ListingWindow : public wxScrolledWindow {
     Configuration config;
     int selected_folders;
     int selected_files;
+    CardPanel* selected_card;
 };
 #endif  // _LISTINGWINDOW_HPP_

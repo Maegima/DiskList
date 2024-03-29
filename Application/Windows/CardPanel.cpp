@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2024-03-23
+ * @date 2024-03-29
  *
  * @copyright Copyright (c) 2024
  *
@@ -13,6 +13,7 @@
 #include "ListingWindow.hpp"
 #include "Controllers/FileSystem.hpp"
 #include "SelectFolderWindow.hpp"
+#include <wx/utils.h>
 
 CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry, wxString path)
     : wxPanel(parent, wxID_ANY),
@@ -77,28 +78,64 @@ Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
     return img;
 }
 
+std::pair<CardPanel::CardIterator, CardPanel::CardIterator> CardPanel::GetIterators(CardPanel *c1, CardPanel *c2) {
+    CardIterator it = this->parent->cards.begin();
+    CardIterator first = this->parent->cards.end();
+    CardIterator second = this->parent->cards.end();
+    while (it != this->parent->cards.end() && first == this->parent->cards.end()) {
+        CardPanel *card = *(it++);
+        if (card == c1 || card == c2) first = it;
+    }
+    while (it != this->parent->cards.end() && second == this->parent->cards.end()) {
+        CardPanel *card = *(it++);
+        if (card == c1 || card == c2) second = it;
+    }
+    return {first, second};
+}
 
 void CardPanel::OnLeftClick(wxMouseEvent &event) {
-    SelectItem(!this->selected);
+    if (wxGetKeyState(WXK_CONTROL)) {
+        SelectItem(!this->selected);
+    } else if (wxGetKeyState(WXK_SHIFT)) {
+        CardPanel *last_card = this->parent->selected_card;
+        if (last_card != nullptr) {
+            auto [begin, end] = GetIterators(last_card, this);
+            for (auto it = begin; it != end; it++) {
+                (*it)->SelectItem(true);
+            }
+        }
+        SelectItem(true);
+    } else {
+        for (auto const &card : this->parent->cards) {
+            if (card->file.type == FileType::File) {
+                card->SelectItem(false, false);
+            }
+        }
+        SelectItem(true);
+    }
+    this->parent->selected_card = this;
     event.Skip();
 }
 
-void CardPanel::SelectItem(bool select) {
-    if(this->selected == select){
+void CardPanel::SelectItem(bool select, bool highlight) {
+    if (this->selected == select) {
         return;
     }
     this->selected = select;
     if (this->selected) {
         this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_GRAYTEXT));
         this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
-    } else {
+    } else if(highlight){
         this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHT));
         this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
-    }
-    if(this->file.type == FileType::Directory) {
-        this->parent->selected_folders += this->selected ? 1 : -1; 
     } else {
-        this->parent->selected_files += this->selected ? 1 : -1; 
+        this->label->SetBackgroundColour(*wxWHITE);
+        this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_BTNTEXT));
+    }
+    if (this->file.type == FileType::Directory) {
+        this->parent->selected_folders += this->selected ? 1 : -1;
+    } else {
+        this->parent->selected_files += this->selected ? 1 : -1;
     }
 }
 
@@ -128,12 +165,12 @@ bool CardPanel::CompareCards::operator()(const CardPanel *c1, const CardPanel *c
 
 void CardPanel::OnMenuClick(wxCommandEvent &evt) {
     bool refresh = false;
-    for(auto card : this->parent->cards) {
-        if(card->selected) {
+    for (auto card : this->parent->cards) {
+        if (card->selected) {
             refresh |= MenuEvent(evt, card->file);
         }
     }
-    if(refresh) {
+    if (refresh) {
         parent->RefreshPath();
     }
 }
@@ -144,8 +181,8 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
     bool refresh = false;
     SelectFolderWindow *lsw = nullptr;
     std::filesystem::path root = this->parent->config.config["root"];
-    wxMenu *menu = (wxMenu*) evt.GetEventObject();
-    wxMenuItem *item = (wxMenuItem*) menu->FindItem(eventId, nullptr);
+    wxMenu *menu = (wxMenu *)evt.GetEventObject();
+    wxMenuItem *item = (wxMenuItem *)menu->FindItem(eventId, nullptr);
     switch (eventId) {
         case MOVE_TO_ROOT:
             result = FileSystem::Move(file.path, root);
@@ -172,8 +209,8 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
                     result = FileSystem::Move(file.path, file.path.parent_path() / folder);
                 }
                 refresh = true;
-            } else if(eventId > MOVE_TO_FOLDER){
-                result = FileSystem::Move(file.path, root / item->GetItemLabelText().ToStdString());   
+            } else if (eventId > MOVE_TO_FOLDER) {
+                result = FileSystem::Move(file.path, root / item->GetItemLabelText().ToStdString());
                 refresh = true;
             }
     }
@@ -188,14 +225,14 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
 void CardPanel::OnRightClick(wxMouseEvent &evt) {
     wxMenu menu;
     SelectItem(true);
-    if(parent->selected_folders > 0 && parent->selected_files == 0) {
+    if (parent->selected_folders > 0 && parent->selected_files == 0) {
         menu.Append(FOLDER_UNWIND, "Unwind files...");
         menu.Append(FOLDER_ORGANIZE, "Organize files...");
         menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     }
     wxMenu *moveMenu = new wxMenu();
     int i = 1;
-    for(auto folder : this->parent->last_folders) {
+    for (auto folder : this->parent->last_folders) {
         moveMenu->Append(MOVE_TO_FOLDER + i++, folder);
     }
     moveMenu->Append(SELECT_FOLDER, "Search...");

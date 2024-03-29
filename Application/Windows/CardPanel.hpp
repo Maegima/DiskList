@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.3
- * @date 2024-03-18
+ * @date 2024-03-29
  *
  * @copyright Copyright (c) 2024
  *
@@ -14,7 +14,7 @@
 
 #include <wx/wx.h>
 #include <filesystem>
-#include <map>
+#include <set>
 #include "Controllers/Image.hpp"
 #include "Controllers/FileInfo.hpp"
 
@@ -57,10 +57,13 @@ class CardPanel : public wxPanel {
         bool operator()(const CardPanel* c1, const CardPanel* c2) const;
     };
 
-    void SelectItem(bool select);
+    typedef std::set<CardPanel *>::iterator CardIterator;
+
+    void SelectItem(bool select, bool highlight = true);
    private:
     wxStaticText* CreateLabel(std::filesystem::directory_entry entry, wxString path);
     Image* CreateImage(std::filesystem::directory_entry entry);
+    std::pair<CardIterator, CardIterator> GetIterators(CardPanel* c1, CardPanel* c2);
 };
 
 #endif  // _CARDPANEL_HPP_

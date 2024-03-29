@@ -3,9 +3,9 @@
  * @author André Lucas Maegima
  * @brief Listing window implementation
  * @version 0.3
- * @date 2024-02-18
+ * @date 2024-03-29
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -18,7 +18,8 @@ ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID i
       iwindow(iwindow),
       config(".conf"),
       selected_folders(0),
-      selected_files(0) {
+      selected_files(0),
+      selected_card(nullptr) {
     SetBackgroundColour(*wxWHITE);
 
     Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
@@ -100,7 +101,7 @@ void ListingWindow::OnKeyPress(wxKeyEvent& event) {
     int uc = event.GetKeyCode();
     if(event.ControlDown() && uc == 'A') {
         for (auto const& card : cards) {
-            if(card->file.type == FileType::File && !card->selected) {
+            if(card->file.type == FileType::File) {
                 card->SelectItem(true);
             }
         }
