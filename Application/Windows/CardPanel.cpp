@@ -125,7 +125,7 @@ void CardPanel::SelectItem(bool select, bool highlight) {
     if (this->selected) {
         this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_GRAYTEXT));
         this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
-    } else if(highlight){
+    } else if (highlight) {
         this->label->SetBackgroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHT));
         this->label->SetForegroundColour(wxSystemSettings::GetColour(wxSystemColour::wxSYS_COLOUR_HIGHLIGHTTEXT));
     } else {
@@ -160,7 +160,7 @@ void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
 bool CardPanel::CompareCards::operator()(const CardPanel *c1, const CardPanel *c2) const {
     if (c1->file.type != c2->file.type)
         return c1->file.type == FileType::Directory;
-    return c1->file.path < c2->file.path;
+    return c1->file.name < c2->file.name;
 }
 
 void CardPanel::OnMenuClick(wxCommandEvent &evt) {

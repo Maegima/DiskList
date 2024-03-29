@@ -3,13 +3,14 @@
  * @author André Lucas Maegima
  * @brief Class to extract file infomations.
  * @version 0.3
- * @date 2023-11-20
+ * @date 2024-03-29
  * 
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  * 
  */
 
 #include <string>
+#include <algorithm>
 #include <filesystem>
 #include <sys/stat.h>
 #include "md5/md5.hpp"
@@ -17,6 +18,9 @@
 
 FileInfo::FileInfo(filesystem::directory_entry entry, bool with_hash){
     path = entry.path();
+    name = path.filename().string();
+    std::transform(name.begin(), name.end(), name.begin(),
+    [](unsigned char c){ return std::tolower(c); });
     struct stat f_stat;
     stat(path.c_str(), &f_stat);
     type = S_ISDIR(f_stat.st_mode) ? FileType::Directory : FileType::File;

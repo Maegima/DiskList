@@ -3,9 +3,9 @@
  * @author André Lucas Maegima
  * @brief Class to extract file infomations.
  * @version 0.3
- * @date 2023-11-20
+ * @date 2024-03-29
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -28,8 +28,9 @@ class FileInfo {
    public:
     off_t size;
     std::filesystem::path path;
+    std::string name;
     FileType type;
-    
+
     FileInfo(std::filesystem::directory_entry entry, bool with_hash = true);
     std::string to_string() const;
     std::string md5sumString() const;
