@@ -26,6 +26,7 @@ enum {
     FOLDER_ORGANIZE = 2502,
     DELETE_EMPTY_FOLDERS = 2503,
     SELECT_FOLDER = 2504,
+    MOVE_TO_FOLDER = 2505,
 };
 
 class CardPanel : public wxPanel {

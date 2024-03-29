@@ -33,7 +33,7 @@ class ListingWindow : public wxScrolledWindow {
     std::set<CardPanel*, CardPanel::CompareCards> cards;
     std::filesystem::path current;
     InfoWindow* iwindow;
-    std::list<std::filesystem::path> last_folders;
+    std::list<std::string> last_folders;
     Configuration config;
     int selected_folders;
     int selected_files;

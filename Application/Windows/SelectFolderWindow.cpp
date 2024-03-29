@@ -74,13 +74,18 @@ void SelectFolderWindow::OnMove(wxCommandEvent& event) {
     int sel = listbox->GetSelection();
     if (sel != -1) {
         std::filesystem::path root = card->parent->config.config["root"]; 
-        FileSystem::Result result = FileSystem::Move(card->file.path, root / listbox->GetString(sel).ToStdString());
+        std::string folder = listbox->GetString(sel).ToStdString();
+        FileSystem::Result result = FileSystem::Move(card->file.path, root / folder);
         if (!result) {
             for (auto const &error : result.errors) {
                 wxLogWarning(wxString(error));
             }
         }
         this->card->parent->RefreshPath();
+        this->card->parent->last_folders.push_front(folder);
+        while(this->card->parent->last_folders.size() > 3) {
+            this->card->parent->last_folders.pop_back();
+        }
     }
     
     Close();
