@@ -13,7 +13,7 @@
 #define _LISTINGWINDOW_HPP_
 
 #include <wx/wx.h>
-#include <set>
+#include <list>
 #include <filesystem>
 #include "CardPanel.hpp"
 #include "InfoWindow.hpp"
@@ -30,7 +30,7 @@ class ListingWindow : public wxScrolledWindow {
     void ChangePath(std::filesystem::path path);
     void RefreshPath();
 
-    std::set<CardPanel*, CardPanel::CompareCards> cards;
+    std::list<CardPanel*> cards;
     std::filesystem::path current;
     InfoWindow* iwindow;
     std::list<std::string> last_folders;

@@ -14,7 +14,7 @@
 
 #include <wx/wx.h>
 #include <filesystem>
-#include <set>
+#include <list>
 #include "Controllers/Image.hpp"
 #include "Controllers/FileInfo.hpp"
 
@@ -57,7 +57,7 @@ class CardPanel : public wxPanel {
         bool operator()(const CardPanel* c1, const CardPanel* c2) const;
     };
 
-    typedef std::set<CardPanel *>::iterator CardIterator;
+    typedef std::list<CardPanel *>::iterator CardIterator;
 
     void SelectItem(bool select, bool highlight = true);
    private:
