@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.3
- * @date 2024-03-29
+ * @date 2024-03-30
  *
  * @copyright Copyright (c) 2024
  *
@@ -13,7 +13,7 @@
 #define _LISTINGWINDOW_HPP_
 
 #include <wx/wx.h>
-#include <list>
+#include <map>
 #include <filesystem>
 #include "CardPanel.hpp"
 #include "InfoWindow.hpp"
@@ -33,7 +33,7 @@ class ListingWindow : public wxScrolledWindow {
     std::list<CardPanel*> cards;
     std::filesystem::path current;
     InfoWindow* iwindow;
-    std::list<std::string> last_folders;
+    std::map<int, std::filesystem::path> last_folders;
     Configuration config;
     int selected_folders;
     int selected_files;

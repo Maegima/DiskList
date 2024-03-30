@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.3
- * @date 2024-03-29
+ * @date 2024-03-30
  *
  * @copyright Copyright (c) 2024
  *
@@ -25,8 +25,7 @@ enum {
     FOLDER_UNWIND = 2501,
     FOLDER_ORGANIZE = 2502,
     DELETE_EMPTY_FOLDERS = 2503,
-    SELECT_FOLDER = 2504,
-    MOVE_TO_FOLDER = 2505,
+    MOVE_TO_FOLDER = 2504,
 };
 
 class CardPanel : public wxPanel {
@@ -48,7 +47,7 @@ class CardPanel : public wxPanel {
     void OnLeavePanel(wxMouseEvent& event);
 
     void OnMenuClick(wxCommandEvent& event);
-    bool MenuEvent(wxCommandEvent& event, const FileInfo& file);
+    bool MenuEvent(wxCommandEvent& event, const FileInfo& file, const std::filesystem::path path);
     void OnRightClick(wxMouseEvent& event);
     void OnLeftClick(wxMouseEvent& event);
     void OnTextClick(wxMouseEvent& event);

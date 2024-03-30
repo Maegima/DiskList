@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2024-03-29
+ * @date 2024-03-30
  *
  * @copyright Copyright (c) 2024
  *
@@ -12,7 +12,6 @@
 #include "CardPanel.hpp"
 #include "ListingWindow.hpp"
 #include "Controllers/FileSystem.hpp"
-#include "SelectFolderWindow.hpp"
 #include <wx/utils.h>
 
 CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry, wxString path)
@@ -165,9 +164,24 @@ bool CardPanel::CompareCards::operator()(const CardPanel *c1, const CardPanel *c
 
 void CardPanel::OnMenuClick(wxCommandEvent &evt) {
     bool refresh = false;
+    int eventId = evt.GetId();
+    wxDirDialog *lsw = nullptr;
+    std::filesystem::path path = this->parent->config.config["root"];
+    switch (eventId) {
+        case MOVE_TO_FOLDER:
+            lsw = new wxDirDialog(this, "Select folder:", path.string());
+            lsw->ShowModal();
+            path = lsw->GetPath().ToStdString();
+            int idx = MOVE_TO_FOLDER + 1;
+            for(int i = idx + 2; i > idx; i--){
+                parent->last_folders[i] = parent->last_folders[i - 1];
+            }
+            parent->last_folders[idx] = path;
+            break;
+    }
     for (auto card : this->parent->cards) {
         if (card->selected) {
-            refresh |= MenuEvent(evt, card->file);
+            refresh |= MenuEvent(evt, card->file, path);
         }
     }
     if (refresh) {
@@ -175,17 +189,16 @@ void CardPanel::OnMenuClick(wxCommandEvent &evt) {
     }
 }
 
-bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
+bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file, const std::filesystem::path path) {
     FileSystem::Result result;
     int eventId = evt.GetId();
     bool refresh = false;
-    SelectFolderWindow *lsw = nullptr;
-    std::filesystem::path root = this->parent->config.config["root"];
     wxMenu *menu = (wxMenu *)evt.GetEventObject();
     wxMenuItem *item = (wxMenuItem *)menu->FindItem(eventId, nullptr);
     switch (eventId) {
         case MOVE_TO_ROOT:
-            result = FileSystem::Move(file.path, root);
+        case MOVE_TO_FOLDER:
+            result = FileSystem::Move(file.path, path);
             refresh = true;
             break;
         case FOLDER_UNWIND:
@@ -198,10 +211,6 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
         case DELETE_EMPTY_FOLDERS:
             result = FileSystem::DeleteEmptyFolders(file.path);
             break;
-        case SELECT_FOLDER:
-            lsw = new SelectFolderWindow("Select folder:", this);
-            lsw->Show();
-            break;
         default:
             if (eventId > 2000 && eventId < 2500) {
                 if (this->parent->config.folder.contains(eventId)) {
@@ -210,7 +219,7 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file) {
                 }
                 refresh = true;
             } else if (eventId > MOVE_TO_FOLDER) {
-                result = FileSystem::Move(file.path, root / item->GetItemLabelText().ToStdString());
+                result = FileSystem::Move(file.path, path / item->GetItemLabelText().ToStdString());
                 refresh = true;
             }
     }
@@ -231,11 +240,12 @@ void CardPanel::OnRightClick(wxMouseEvent &evt) {
         menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     }
     wxMenu *moveMenu = new wxMenu();
-    int i = 1;
-    for (auto folder : this->parent->last_folders) {
-        moveMenu->Append(MOVE_TO_FOLDER + i++, folder);
+    for (int i = MOVE_TO_FOLDER; i < MOVE_TO_FOLDER + 3; i++) {
+        std::string name = parent->last_folders[i + 1].filename();
+        if(name != "")
+            moveMenu->Append(i + 1, name);
     }
-    moveMenu->Append(SELECT_FOLDER, "Search...");
+    moveMenu->Append(MOVE_TO_FOLDER, "Search...");
     moveMenu->AppendSeparator();
     moveMenu->Append(MOVE_TO_ROOT, "root");
     for (auto event : this->parent->config.folder) {
