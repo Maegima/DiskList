@@ -172,11 +172,10 @@ void CardPanel::OnMenuClick(wxCommandEvent &evt) {
             lsw = new wxDirDialog(this, "Select folder:", path.string());
             lsw->ShowModal();
             path = lsw->GetPath().ToStdString();
-            int idx = MOVE_TO_FOLDER + 1;
-            for(int i = idx + 2; i > idx; i--){
-                parent->last_folders[i] = parent->last_folders[i - 1];
+            for(int i = MOVE_TO_FOLDER_MAX - 2; i > MOVE_TO_FOLDER; i--){
+                parent->last_folders[i + 1] = parent->last_folders[i];
             }
-            parent->last_folders[idx] = path;
+            parent->last_folders[MOVE_TO_FOLDER + 1] = path;
             break;
     }
     for (auto card : this->parent->cards) {
@@ -193,8 +192,6 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file, const std::
     FileSystem::Result result;
     int eventId = evt.GetId();
     bool refresh = false;
-    wxMenu *menu = (wxMenu *)evt.GetEventObject();
-    wxMenuItem *item = (wxMenuItem *)menu->FindItem(eventId, nullptr);
     switch (eventId) {
         case MOVE_TO_ROOT:
         case MOVE_TO_FOLDER:
@@ -218,8 +215,8 @@ bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file, const std::
                     result = FileSystem::Move(file.path, file.path.parent_path() / folder);
                 }
                 refresh = true;
-            } else if (eventId > MOVE_TO_FOLDER) {
-                result = FileSystem::Move(file.path, path / item->GetItemLabelText().ToStdString());
+            } else if (eventId > MOVE_TO_FOLDER && eventId < MOVE_TO_FOLDER_MAX) {
+                result = FileSystem::Move(file.path, parent->last_folders[eventId]);
                 refresh = true;
             }
     }
@@ -240,10 +237,10 @@ void CardPanel::OnRightClick(wxMouseEvent &evt) {
         menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     }
     wxMenu *moveMenu = new wxMenu();
-    for (int i = MOVE_TO_FOLDER; i < MOVE_TO_FOLDER + 3; i++) {
-        std::string name = parent->last_folders[i + 1].filename();
+    for (int i = MOVE_TO_FOLDER + 1; i < MOVE_TO_FOLDER_MAX; i++) {
+        std::string name = parent->last_folders[i].filename();
         if(name != "")
-            moveMenu->Append(i + 1, name);
+            moveMenu->Append(i, name);
     }
     moveMenu->Append(MOVE_TO_FOLDER, "Search...");
     moveMenu->AppendSeparator();
