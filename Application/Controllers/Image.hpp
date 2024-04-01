@@ -3,9 +3,9 @@
  * @author André Lucas Maegima
  * @brief Image texture loader definition
  * @version 0.3
- * @date 2023-12-27
+ * @date 2024-04-01
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -28,13 +28,18 @@ class Image : public wxPanel {
     void ChangeLightness(int alpha);
 
    private:
-    wxImage* static_img;
-    wxImage image;
-    wxBitmap resized;
+    std::string path;
     int width;
     int height;
-    Type type;
     bool changed;
+    Type type;
+    wxImage* static_img;
+    wxImage* default_img;
+    wxImage image;
+    wxBitmap resized;
+
+    void LoadImage();
+    std::string GetKey(const std::filesystem::directory_entry& path, Configuration& config);
 };
 
 #endif /* DISKLIST_IMAGE_HPP */

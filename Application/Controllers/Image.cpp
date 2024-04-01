@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Image texture loader implementation
  * @version 0.3
- * @date 2024-03-29
+ * @date 2024-04-01
  *
  * @copyright Copyright (c) 2024
  *
@@ -12,42 +12,55 @@
 #include "Image.hpp"
 #include "Algorithm.hpp"
 
-Image::Image(wxWindow* parent, const std::filesystem::directory_entry& entry, Configuration& config) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)) {
-    std::vector<std::string> img_exts = config.image_extension;
-    std::string extension = entry.path().extension().string();
-    std::string key = "default";
-    if (entry.is_directory()) {
-        key = "folder";
-    } else if (Algorithm::contains(img_exts, extension)) {
-        key = "dynamic";
-    } else if (config.image.contains(extension)) {
-        key = extension;
-    }
-    if (key == "dynamic") {
-        this->static_img = new wxImage();
-        this->static_img->SetLoadFlags(0);
-        if (this->static_img->LoadFile(wxString::FromUTF8(entry.path()), wxBITMAP_TYPE_ANY)) {
-            this->type = Type::DYNAMIC;
-        } else {
-            delete this->static_img;
-            this->static_img = config.image["default"];
-            this->type = Type::STATIC;
-        }
-
+Image::Image(wxWindow* parent, const std::filesystem::directory_entry& entry, Configuration &config)
+    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(200, 200)),
+    path(entry.path()),
+    width(-1),
+    height(-1),
+    changed(false) {
+    std::string key = GetKey(entry, config);
+    if(key == "dynamic") {
+        this->type = Type::DYNAMIC;
+        this->default_img = config.image["default"];
+        this->static_img = nullptr;
     } else {
         this->type = Type::STATIC;
-        this->static_img = config.image[key];
+        this->default_img = config.image[key];
+        this->static_img = default_img;
     }
-    this->image = *static_img;
-    width = -1;
-    height = -1;
-    changed = false;
+    this->image = *default_img;
     Bind(wxEVT_PAINT, &Image::OnPaint, this, wxID_ANY);
 }
 
 Image::~Image() {
     if (type == Image::Type::DYNAMIC)
         delete static_img;
+}
+
+void Image::LoadImage() { 
+    if (this->static_img == nullptr && this->type == Type::DYNAMIC) {
+        this->static_img = new wxImage();
+        this->static_img->SetLoadFlags(0);
+        if (!this->static_img->LoadFile(wxString::FromUTF8(path), wxBITMAP_TYPE_ANY)) {    
+            delete this->static_img;
+            this->static_img = default_img;
+            this->type = Type::STATIC;
+        }
+        this->image = *static_img;
+    }
+}
+
+std::string Image::GetKey(const std::filesystem::directory_entry &entry, Configuration& config) {
+    std::vector<std::string> img_exts = config.image_extension;
+    std::string extension = entry.path().extension().string();
+    if (entry.is_directory()) {
+        return "folder";
+    } else if (Algorithm::contains(img_exts, extension)) {
+        return "dynamic";
+    } else if (config.image.contains(extension)) {
+        return extension;
+    }
+    return "default";
 }
 
 void Image::ChangeLightness(int alpha) {
@@ -74,6 +87,7 @@ void Image::OnSize(wxSizeEvent& event) {
 
 void Image::render(wxDC& dc) {
     int neww, newh;
+    LoadImage();
     dc.GetSize(&neww, &newh);
 
     if (neww != width || newh != height || changed) {
