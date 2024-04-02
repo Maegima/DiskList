@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.3
- * @date 2024-03-30
+ * @date 2024-04-02
  *
  * @copyright Copyright (c) 2024
  *
@@ -148,7 +148,7 @@ void CardPanel::OnFolderLeftClick(wxMouseEvent &event) {
 
 void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
     std::list<std::pair<wxString, wxString>> list;
-    list.push_back({"Name", file.path.filename().string()});
+    list.push_back({"Name", wxString::FromUTF8(file.path.filename().string())});
     list.push_back({"Size", file.size_str()});
     list.push_back({"Created", file.created_str()});
     list.push_back({"Modified", file.modified_str()});
@@ -171,7 +171,7 @@ void CardPanel::OnMenuClick(wxCommandEvent &evt) {
         case MOVE_TO_FOLDER:
             lsw = new wxDirDialog(this, "Select folder:", path.string());
             lsw->ShowModal();
-            path = lsw->GetPath().ToStdString();
+            path = lsw->GetPath().ToUTF8().data();
             for(int i = MOVE_TO_FOLDER_MAX - 2; i > MOVE_TO_FOLDER; i--){
                 parent->last_folders[i + 1] = parent->last_folders[i];
             }
@@ -240,7 +240,7 @@ void CardPanel::OnRightClick(wxMouseEvent &evt) {
     for (int i = MOVE_TO_FOLDER + 1; i < MOVE_TO_FOLDER_MAX; i++) {
         std::string name = parent->last_folders[i].filename();
         if(name != "")
-            moveMenu->Append(i, name);
+            moveMenu->Append(i, wxString::FromUTF8(name));
     }
     moveMenu->Append(MOVE_TO_FOLDER, "Search...");
     moveMenu->AppendSeparator();
