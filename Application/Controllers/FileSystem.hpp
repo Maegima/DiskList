@@ -3,9 +3,9 @@
  * @author André Lucas Maegima
  * @brief FileSystem utility class
  * @version 0.3
- * @date 2023-12-27
+ * @date 2024-04-02
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -22,6 +22,7 @@ class FileSystem {
        private:
        public:
         std::list<std::string> errors;
+        std::list<std::filesystem::path> created;
 
         inline bool success() const { return this->errors.size() == 0; };
         inline operator bool() const { return success(); };

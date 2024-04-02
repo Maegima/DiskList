@@ -11,24 +11,25 @@
 
 #include "CardPanel.hpp"
 #include "ListingWindow.hpp"
-#include "Controllers/FileSystem.hpp"
 #include <wx/utils.h>
 
 CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry, wxString path)
     : wxPanel(parent, wxID_ANY),
       parent(parent),
       file(FileInfo(entry, false)),
+      name(path != "" ? path.ToStdString() : entry.path().filename().string()),
       image(CreateImage(entry)),
       label(CreateLabel(entry, path)),
       m_mouseInside(false),
-      selected(false) {
+      selected(false),
+      to_remove(false) {
     auto sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
     sizer->AddSpacer(5);
     sizer->Add(image, 0);
     sizer->Add(label, 0, wxALIGN_CENTER);
     sizer->AddSpacer(10);
-
+    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::tolower(c); });
     Bind(wxEVT_ENTER_WINDOW, &CardPanel::OnEnterPanel, this);
     Bind(wxEVT_LEAVE_WINDOW, &CardPanel::OnLeavePanel, this);
 }
@@ -159,73 +160,7 @@ void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
 bool CardPanel::CompareCards::operator()(const CardPanel *c1, const CardPanel *c2) const {
     if (c1->file.type != c2->file.type)
         return c1->file.type == FileType::Directory;
-    return c1->file.name < c2->file.name;
-}
-
-void CardPanel::OnMenuClick(wxCommandEvent &evt) {
-    bool refresh = false;
-    int eventId = evt.GetId();
-    wxDirDialog *lsw = nullptr;
-    std::filesystem::path path = this->parent->config.config["root"];
-    switch (eventId) {
-        case MOVE_TO_FOLDER:
-            lsw = new wxDirDialog(this, "Select folder:", path.string());
-            lsw->ShowModal();
-            path = lsw->GetPath().ToUTF8().data();
-            for(int i = MOVE_TO_FOLDER_MAX - 2; i > MOVE_TO_FOLDER; i--){
-                parent->last_folders[i + 1] = parent->last_folders[i];
-            }
-            parent->last_folders[MOVE_TO_FOLDER + 1] = path;
-            break;
-    }
-    for (auto card : this->parent->cards) {
-        if (card->selected) {
-            refresh |= MenuEvent(evt, card->file, path);
-        }
-    }
-    if (refresh) {
-        parent->RefreshPath();
-    }
-}
-
-bool CardPanel::MenuEvent(wxCommandEvent &evt, const FileInfo &file, const std::filesystem::path path) {
-    FileSystem::Result result;
-    int eventId = evt.GetId();
-    bool refresh = false;
-    switch (eventId) {
-        case MOVE_TO_ROOT:
-        case MOVE_TO_FOLDER:
-            result = FileSystem::Move(file.path, path);
-            refresh = true;
-            break;
-        case FOLDER_UNWIND:
-            result = FileSystem::UnwindFolder(file.path);
-            refresh = true;
-            break;
-        case FOLDER_ORGANIZE:
-            result = FileSystem::OrganizeFolder(file.path, this->parent->config);
-            break;
-        case DELETE_EMPTY_FOLDERS:
-            result = FileSystem::DeleteEmptyFolders(file.path);
-            break;
-        default:
-            if (eventId > 2000 && eventId < 2500) {
-                if (this->parent->config.folder.contains(eventId)) {
-                    std::filesystem::path folder = this->parent->config.folder[eventId].first;
-                    result = FileSystem::Move(file.path, file.path.parent_path() / folder);
-                }
-                refresh = true;
-            } else if (eventId > MOVE_TO_FOLDER && eventId < MOVE_TO_FOLDER_MAX) {
-                result = FileSystem::Move(file.path, parent->last_folders[eventId]);
-                refresh = true;
-            }
-    }
-    if (!result) {
-        for (auto const &error : result.errors) {
-            wxLogWarning(wxString(error));
-        }
-    }
-    return refresh;
+    return c1->name < c2->name;
 }
 
 void CardPanel::OnRightClick(wxMouseEvent &evt) {
@@ -249,8 +184,8 @@ void CardPanel::OnRightClick(wxMouseEvent &evt) {
         moveMenu->Append(event.first, event.second.second);
     }
     menu.AppendSubMenu(moveMenu, "Move to...");
-    moveMenu->Connect(wxEVT_MENU, wxCommandEventHandler(CardPanel::OnMenuClick), nullptr, this);
-    menu.Connect(wxEVT_MENU, wxCommandEventHandler(CardPanel::OnMenuClick), nullptr, this);
+    moveMenu->Connect(wxEVT_MENU, wxCommandEventHandler(ListingWindow::OnCardMenuClick), nullptr, this->parent);
+    menu.Connect(wxEVT_MENU, wxCommandEventHandler(ListingWindow::OnCardMenuClick), nullptr, this->parent);
     PopupMenu(&menu);
 }
 

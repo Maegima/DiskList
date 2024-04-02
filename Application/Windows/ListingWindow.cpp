@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Listing window implementation
  * @version 0.3
- * @date 2024-03-29
+ * @date 2024-04-02
  *
  * @copyright Copyright (c) 2024
  *
@@ -11,7 +11,7 @@
 
 #include "wx/wrapsizer.h"
 #include "ListingWindow.hpp"
-#include "Controllers/FileSystem.hpp"
+#include "Controllers/Algorithm.hpp"
 
 ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID id, const wxPoint& pos, const wxSize& size)
     : wxScrolledWindow(parent, id, pos, size, wxSUNKEN_BORDER),
@@ -52,31 +52,119 @@ void ListingWindow::ChangePath(std::filesystem::path path) {
     RefreshPath();
 }
 
-void ListingWindow::RefreshPath() {
+void ListingWindow::RefreshPath(bool reload) {
     auto* sizer = this->GetSizer();
-    sizer->Clear(true);
-    this->cards.clear();
+    sizer->Clear(reload);
     this->selected_files = 0;
     this->selected_folders = 0;
-    for (auto const& entry : std::filesystem::directory_iterator{current}) {
-        auto card = new CardPanel(this, entry);
-        card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
-        cards.push_back(card);
-    }
-    cards.sort(CardPanel::CompareCards());
-    if (this->current.has_parent_path() && this->current != this->config.config["root"]) {
-        std::filesystem::directory_entry parent_entry(this->current.parent_path());
-        auto card = new CardPanel(this, parent_entry, "..");
-        card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
-        cards.push_front(card);
+    if(reload) {
+        this->cards.clear();
+        for (auto const& entry : std::filesystem::directory_iterator{current}) {
+            AddNewCard(entry);
+        }
+        if (this->current.has_parent_path() && this->current != this->config.config["root"]) {
+            AddNewCard(std::filesystem::directory_entry(this->current.parent_path()), "..");
+        }
+        cards.sort(CardPanel::CompareCards());
+    } else {
+        std::list<CardPanel*> erase_list;
+        for (auto const &card : cards) {
+            if(card->to_remove) {
+                erase_list.push_back(card);
+            }
+        }
+        std::erase_if(cards, [](CardPanel *card) { return card->to_remove; });
+        for(auto card : erase_list) {
+            delete card;
+        }
     }
     for (auto const& card : cards) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
     }
-    this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
+    //this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
     this->SendSizeEvent();
     this->Refresh();
     this->SetFocus();
+}
+
+void ListingWindow::OnCardMenuClick(wxCommandEvent &evt) {
+    bool refresh = false;
+    int eventId = evt.GetId();
+    wxDirDialog *lsw = nullptr;
+    std::filesystem::path path = this->config.config["root"];
+    switch (eventId) {
+        case MOVE_TO_FOLDER:
+            lsw = new wxDirDialog(this, "Select folder:", path.string());
+            lsw->ShowModal();
+            path = lsw->GetPath().ToUTF8().data();
+            for(int i = MOVE_TO_FOLDER_MAX - 2; i > MOVE_TO_FOLDER; i--){
+                last_folders[i + 1] = last_folders[i];
+            }
+            last_folders[MOVE_TO_FOLDER + 1] = path;
+            break;
+    }
+    for (auto card : this->cards) {
+        if (card->selected) {
+            refresh |= MenuEvent(evt, card, path);
+        }
+    }
+    RefreshPath(refresh);
+}
+
+bool ListingWindow::MenuEvent(wxCommandEvent &evt, CardPanel *card, const std::filesystem::path path) {
+    FileSystem::Result result;
+    int eventId = evt.GetId();
+    bool refresh = false;
+    switch (eventId) {
+        case MOVE_TO_ROOT:
+        case MOVE_TO_FOLDER:
+            result = this->Move(card, path);
+            break;
+        case FOLDER_UNWIND:
+            result = FileSystem::UnwindFolder(card->file.path);
+            refresh = true;
+            break;
+        case FOLDER_ORGANIZE:
+            result = FileSystem::OrganizeFolder(card->file.path, this->config);
+            break;
+        case DELETE_EMPTY_FOLDERS:
+            result = FileSystem::DeleteEmptyFolders(card->file.path);
+            break;
+        default:
+            if (eventId > 2000 && eventId < 2500 && this->config.folder.contains(eventId)) {
+                std::filesystem::path folder = this->config.folder[eventId].first;
+                result = this->Move(card, card->file.path.parent_path() / folder);
+            } else if (eventId > MOVE_TO_FOLDER && eventId < MOVE_TO_FOLDER_MAX) {
+                result = this->Move(card, last_folders[eventId]);
+            }
+    }
+    if (!result) {
+        for (auto const &error : result.errors) {
+            wxLogWarning(wxString(error));
+        }
+    }
+    return refresh;
+}
+
+FileSystem::Result ListingWindow::Move(CardPanel* card, std::filesystem::path path) {
+    auto result = FileSystem::Move(card->file.path, path);
+    for(const auto &item : result.created) {
+        if(item.parent_path() == current) {
+            AddNewCard(std::filesystem::directory_entry(item));
+            cards.sort(CardPanel::CompareCards());
+        }
+    }
+    if(result) {
+        card->to_remove = true;
+    }
+    return result;
+}
+
+CardPanel* ListingWindow::AddNewCard(std::filesystem::directory_entry entry, std::string label) {
+    auto card = new CardPanel(this, entry, label);
+    card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
+    cards.push_back(card);
+    return card;
 }
 
 void ListingWindow::OnFolderMenuClick(wxCommandEvent& evt) {

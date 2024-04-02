@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.3
- * @date 2024-03-30
+ * @date 2024-04-02
  *
  * @copyright Copyright (c) 2024
  *
@@ -13,10 +13,10 @@
 #define _CARDPANEL_HPP_
 
 #include <wx/wx.h>
-#include <filesystem>
 #include <list>
 #include "Controllers/Image.hpp"
 #include "Controllers/FileInfo.hpp"
+#include "Controllers/FileSystem.hpp"
 
 class ListingWindow;
 
@@ -33,10 +33,12 @@ class CardPanel : public wxPanel {
    public:
     ListingWindow* parent;
     FileInfo file;
+    std::string name;
     Image* image;
     wxStaticText* label;
     bool m_mouseInside;
     bool selected;
+    bool to_remove;
 
     CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry, wxString path = "");
     ~CardPanel();
@@ -47,8 +49,6 @@ class CardPanel : public wxPanel {
     void OnEnterPanel(wxMouseEvent& event);
     void OnLeavePanel(wxMouseEvent& event);
 
-    void OnMenuClick(wxCommandEvent& event);
-    bool MenuEvent(wxCommandEvent& event, const FileInfo& file, const std::filesystem::path path);
     void OnRightClick(wxMouseEvent& event);
     void OnLeftClick(wxMouseEvent& event);
     void OnTextClick(wxMouseEvent& event);

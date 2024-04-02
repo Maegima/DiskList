@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.3
- * @date 2024-03-30
+ * @date 2024-04-02
  *
  * @copyright Copyright (c) 2024
  *
@@ -14,9 +14,9 @@
 
 #include <wx/wx.h>
 #include <map>
-#include <filesystem>
 #include "CardPanel.hpp"
 #include "InfoWindow.hpp"
+#include "Controllers/FileSystem.hpp"
 #include "Controllers/Configuration.hpp"
 
 class ListingWindow : public wxScrolledWindow {
@@ -26,9 +26,14 @@ class ListingWindow : public wxScrolledWindow {
     void OnFolderRightClick(wxMouseEvent& event);
     void OnFolderMenuClick(wxCommandEvent& event);
     void OnKeyPress(wxKeyEvent& event);
+    void OnCardMenuClick(wxCommandEvent& event);
 
     void ChangePath(std::filesystem::path path);
-    void RefreshPath();
+    void RefreshPath(bool reload = true);
+
+    bool MenuEvent(wxCommandEvent& event, CardPanel *card, const std::filesystem::path path);
+
+    FileSystem::Result Move(CardPanel* card, std::filesystem::path path);
 
     std::list<CardPanel*> cards;
     std::filesystem::path current;
@@ -38,5 +43,8 @@ class ListingWindow : public wxScrolledWindow {
     int selected_folders;
     int selected_files;
     CardPanel* selected_card;
+
+   private:
+    CardPanel* AddNewCard(std::filesystem::directory_entry entry, std::string label = "");
 };
 #endif  // _LISTINGWINDOW_HPP_

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief FileSystem utility class
  * @version 0.3
- * @date 2024-03-23
+ * @date 2024-04-02
  *
  * @copyright Copyright (c) 2024
  *
@@ -21,7 +21,9 @@ FileSystem::Result FileSystem::Move(const std::filesystem::path &path, const std
     std::filesystem::path new_path = folder / filename;
     try {
         if (!std::filesystem::exists(folder)) {
-            std::filesystem::create_directory(folder);
+            if(std::filesystem::create_directory(folder)) {
+                result.created.push_back(folder);
+            };
         }
         if (!std::filesystem::exists(new_path)) {
             std::filesystem::rename(path, new_path);
