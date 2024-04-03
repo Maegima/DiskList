@@ -58,7 +58,7 @@ void ListingWindow::RefreshPath(bool reload) {
     this->selected_files = 0;
     this->selected_folders = 0;
     this->SetFocus();
-    if(reload) {
+    if (reload) {
         this->cards.clear();
         for (auto const& entry : std::filesystem::directory_iterator{current}) {
             AddNewCard(entry);
@@ -69,57 +69,66 @@ void ListingWindow::RefreshPath(bool reload) {
         cards.sort(CardPanel::CompareCards());
     } else {
         std::list<CardPanel*> erase_list;
-        for (auto const &card : cards) {
-            if(card->to_remove) {
+        for (auto const& card : cards) {
+            if (card->to_remove) {
                 erase_list.push_back(card);
             }
         }
-        std::erase_if(cards, [](CardPanel *card) { return card->to_remove; });
-        for(auto card : erase_list) {
+        std::erase_if(cards, [](CardPanel* card) { return card->to_remove; });
+        for (auto card : erase_list) {
             delete card;
         }
     }
     for (auto const& card : cards) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
     }
-    //this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
+    // this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
     this->SendSizeEvent();
     this->Refresh();
 }
 
-void ListingWindow::OnCardMenuClick(wxCommandEvent &evt) {
+void ListingWindow::OnCardMenuClick(wxCommandEvent& evt) {
     ExecuteMenuEvent(evt.GetId());
 }
 
 void ListingWindow::ExecuteMenuEvent(int eventId) {
     bool refresh = false;
-    wxDirDialog *lsw = nullptr;
-    std::filesystem::path path = this->config.config["root"];
-    switch (eventId) {
-        case MOVE_TO_FOLDER:
-            lsw = new wxDirDialog(this, "Select folder:", path.string());
-            lsw->ShowModal();
-            path = lsw->GetPath().ToUTF8().data();
-            for(int i = MOVE_TO_FOLDER_MAX - 2; i > MOVE_TO_FOLDER; i--){
-                last_folders[i + 1] = last_folders[i];
-            }
-            last_folders[MOVE_TO_FOLDER + 1] = path;
-            break;
-    }
-    for (auto card : this->cards) {
-        if (card->selected) {
-            refresh |= ExecuteCardEvent(eventId, card, path);
+    wxDirDialog* lsw = nullptr;
+    std::filesystem::path path = "";
+    std::filesystem::path root = this->config.config["root"];
+    if (eventId == MOVE_TO_FOLDER) {
+        lsw = new wxDirDialog(this, "Select folder:", root.string());
+        lsw->ShowModal();
+        path = lsw->GetPath().ToUTF8().data();
+        for (int i = MOVE_TO_FOLDER_MAX - 2; i > MOVE_TO_FOLDER; i--) {
+            last_folders[i + 1] = last_folders[i];
         }
+        last_folders[MOVE_TO_FOLDER + 1] = path;
+    } else if (eventId >= MOVE_TO_ROOT && eventId <= DELETE_EMPTY_FOLDERS) {
+        path = root;
+    } else if (eventId > 2000 && eventId < 2500 && this->config.folder.contains(eventId)) {
+        path = current / this->config.folder[eventId].first;
+        eventId = MOVE_TO_FOLDER;
+    } else if (eventId > MOVE_TO_FOLDER && eventId < MOVE_TO_FOLDER_MAX) {
+        path = last_folders[eventId];
+        eventId = MOVE_TO_FOLDER;
     }
-    RefreshPath(refresh);
+    if (!path.empty()) {
+        for (auto card : this->cards) {
+            if (card->selected) {
+                refresh |= ExecuteCardEvent(eventId, card, path);
+            }
+        }
+        RefreshPath(refresh);
+    }
 }
 
 bool ListingWindow::ExecuteCardEvent(int eventId, CardPanel* card, const std::filesystem::path path) {
     FileSystem::Result result;
     bool refresh = false;
     switch (eventId) {
-        case MOVE_TO_FOLDER:
         case MOVE_TO_ROOT:
+        case MOVE_TO_FOLDER:
             result = this->Move(card, path);
             break;
         case FOLDER_UNWIND:
@@ -133,15 +142,11 @@ bool ListingWindow::ExecuteCardEvent(int eventId, CardPanel* card, const std::fi
             result = FileSystem::DeleteEmptyFolders(card->file.path);
             break;
         default:
-            if (eventId > 2000 && eventId < 2500 && this->config.folder.contains(eventId)) {
-                std::filesystem::path folder = this->config.folder[eventId].first;
-                result = this->Move(card, card->file.path.parent_path() / folder);
-            } else if (eventId > MOVE_TO_FOLDER && eventId < MOVE_TO_FOLDER_MAX) {
-                result = this->Move(card, last_folders[eventId]);
-            }
+            wxLogWarning("Invalid event %d", eventId);
+            break;
     }
     if (!result) {
-        for (auto const &error : result.errors) {
+        for (auto const& error : result.errors) {
             wxLogWarning(wxString(error));
         }
     }
@@ -150,13 +155,13 @@ bool ListingWindow::ExecuteCardEvent(int eventId, CardPanel* card, const std::fi
 
 FileSystem::Result ListingWindow::Move(CardPanel* card, std::filesystem::path path) {
     auto result = FileSystem::Move(card->file.path, path);
-    for(const auto &item : result.created) {
-        if(item.parent_path() == current) {
+    for (const auto& item : result.created) {
+        if (item.parent_path() == current) {
             AddNewCard(std::filesystem::directory_entry(item));
             cards.sort(CardPanel::CompareCards());
         }
     }
-    if(result) {
+    if (result) {
         card->to_remove = true;
     }
     return result;
@@ -190,23 +195,19 @@ void ListingWindow::OnFolderMenuClick(wxCommandEvent& evt) {
 
 void ListingWindow::OnKeyPress(wxKeyEvent& event) {
     int uc = event.GetKeyCode();
-    if(event.ControlDown() && uc == 'A') {
-        for (auto const& card : cards) {
-            if(card->file.type == FileType::File) {
-                card->SelectItem(true);
-            }
-        }
-    }
     int event_first = 2001;
-    int key = '1';
-    int max_shortcut = 9;
-    if(event.ControlDown()) {
-        for(int i = 0; i < max_shortcut; i++) {
-            int eventId = event_first + i;
-            int currenKey = key + i;
-            if(uc == currenKey && this->config.folder.contains(eventId)) {
-                ExecuteMenuEvent(eventId);
-            }
+    if (event.ControlDown()) {
+        switch (uc) {
+            case '1' ... '9':
+                ExecuteMenuEvent(event_first + uc - '1');
+                break;
+            case 'A':
+                for (auto const& card : cards) {
+                    if (card->file.type == FileType::File) {
+                        card->SelectItem(true);
+                    }
+                }
+                break;
         }
     }
     event.Skip();
