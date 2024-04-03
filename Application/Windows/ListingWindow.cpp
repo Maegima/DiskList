@@ -210,6 +210,9 @@ void ListingWindow::OnKeyPress(wxKeyEvent& event) {
                 break;
         }
     }
+    if (uc >= WXK_F6 || uc <= WXK_F7) {
+        ExecuteMenuEvent(MOVE_TO_FOLDER + 1 + uc - WXK_F6);
+    }
     event.Skip();
 }
 
