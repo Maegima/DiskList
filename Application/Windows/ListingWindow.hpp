@@ -2,8 +2,8 @@
  * @file ListingWindow.hpp
  * @author André Lucas Maegima
  * @brief Files listing window
- * @version 0.3
- * @date 2024-04-02
+ * @version 0.4
+ * @date 2024-04-03
  *
  * @copyright Copyright (c) 2024
  *
@@ -31,7 +31,8 @@ class ListingWindow : public wxScrolledWindow {
     void ChangePath(std::filesystem::path path);
     void RefreshPath(bool reload = true);
 
-    bool MenuEvent(wxCommandEvent& event, CardPanel *card, const std::filesystem::path path);
+    void ExecuteMenuEvent(int eventId);
+    bool ExecuteCardEvent(int eventId, CardPanel *card, const std::filesystem::path path);
 
     FileSystem::Result Move(CardPanel* card, std::filesystem::path path);
 

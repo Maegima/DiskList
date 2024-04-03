@@ -2,8 +2,8 @@
  * @file ListingWindow.cpp
  * @author André Lucas Maegima
  * @brief Listing window implementation
- * @version 0.3
- * @date 2024-04-02
+ * @version 0.4
+ * @date 2024-04-03
  *
  * @copyright Copyright (c) 2024
  *
@@ -57,6 +57,7 @@ void ListingWindow::RefreshPath(bool reload) {
     sizer->Clear(reload);
     this->selected_files = 0;
     this->selected_folders = 0;
+    this->SetFocus();
     if(reload) {
         this->cards.clear();
         for (auto const& entry : std::filesystem::directory_iterator{current}) {
@@ -84,12 +85,14 @@ void ListingWindow::RefreshPath(bool reload) {
     //this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
     this->SendSizeEvent();
     this->Refresh();
-    this->SetFocus();
 }
 
 void ListingWindow::OnCardMenuClick(wxCommandEvent &evt) {
+    ExecuteMenuEvent(evt.GetId());
+}
+
+void ListingWindow::ExecuteMenuEvent(int eventId) {
     bool refresh = false;
-    int eventId = evt.GetId();
     wxDirDialog *lsw = nullptr;
     std::filesystem::path path = this->config.config["root"];
     switch (eventId) {
@@ -105,19 +108,18 @@ void ListingWindow::OnCardMenuClick(wxCommandEvent &evt) {
     }
     for (auto card : this->cards) {
         if (card->selected) {
-            refresh |= MenuEvent(evt, card, path);
+            refresh |= ExecuteCardEvent(eventId, card, path);
         }
     }
     RefreshPath(refresh);
 }
 
-bool ListingWindow::MenuEvent(wxCommandEvent &evt, CardPanel *card, const std::filesystem::path path) {
+bool ListingWindow::ExecuteCardEvent(int eventId, CardPanel* card, const std::filesystem::path path) {
     FileSystem::Result result;
-    int eventId = evt.GetId();
     bool refresh = false;
     switch (eventId) {
-        case MOVE_TO_ROOT:
         case MOVE_TO_FOLDER:
+        case MOVE_TO_ROOT:
             result = this->Move(card, path);
             break;
         case FOLDER_UNWIND:
@@ -195,6 +197,19 @@ void ListingWindow::OnKeyPress(wxKeyEvent& event) {
             }
         }
     }
+    int event_first = 2001;
+    int key = '1';
+    int max_shortcut = 9;
+    if(event.ControlDown()) {
+        for(int i = 0; i < max_shortcut; i++) {
+            int eventId = event_first + i;
+            int currenKey = key + i;
+            if(uc == currenKey && this->config.folder.contains(eventId)) {
+                ExecuteMenuEvent(eventId);
+            }
+        }
+    }
+    event.Skip();
 }
 
 void ListingWindow::OnFolderRightClick(wxMouseEvent& evt) {
