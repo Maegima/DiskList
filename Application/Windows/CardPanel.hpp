@@ -2,8 +2,8 @@
  * @file CardPanel.hpp
  * @author André Lucas Maegima
  * @brief CardPanel class definition
- * @version 0.3
- * @date 2024-04-02
+ * @version 0.4
+ * @date 2024-04-04
  *
  * @copyright Copyright (c) 2024
  *
@@ -52,6 +52,7 @@ class CardPanel : public wxPanel {
     void OnRightClick(wxMouseEvent& event);
     void OnLeftClick(wxMouseEvent& event);
     void OnTextClick(wxMouseEvent& event);
+    void SkipMouseEvent(wxMouseEvent &event);
 
     struct CompareCards {
         bool operator()(const CardPanel* c1, const CardPanel* c2) const;

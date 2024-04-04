@@ -32,6 +32,8 @@ CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry ent
     std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::tolower(c); });
     Bind(wxEVT_ENTER_WINDOW, &CardPanel::OnEnterPanel, this);
     Bind(wxEVT_LEAVE_WINDOW, &CardPanel::OnLeavePanel, this);
+    Bind(wxEVT_AUX1_DOWN, &CardPanel::SkipMouseEvent, this);
+    Bind(wxEVT_AUX2_DOWN, &CardPanel::SkipMouseEvent, this);
 }
 
 CardPanel::~CardPanel() {
@@ -61,6 +63,8 @@ wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry) {
     }
     text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnTextClick, this, wxID_ANY);
     text->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnRightClick, this, wxID_ANY);
+    text->Bind(wxEVT_AUX1_DOWN, &CardPanel::SkipMouseEvent, this);
+    text->Bind(wxEVT_AUX2_DOWN, &CardPanel::SkipMouseEvent, this);
     return text;
 }
 
@@ -75,6 +79,8 @@ Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
     }
     img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnLeftClick, this, wxID_ANY);
     img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnRightClick, this, wxID_ANY);
+    img->Bind(wxEVT_AUX1_DOWN, &CardPanel::SkipMouseEvent, this);
+    img->Bind(wxEVT_AUX2_DOWN, &CardPanel::SkipMouseEvent, this);
     return img;
 }
 
@@ -141,6 +147,10 @@ void CardPanel::SelectItem(bool select, bool highlight) {
 
 void CardPanel::OnTextClick(wxMouseEvent &event) {
     event.Skip();
+}
+
+void CardPanel::SkipMouseEvent(wxMouseEvent &event) {
+    wxQueueEvent(GetParent()->GetEventHandler(), new wxMouseEvent(event.GetEventType()));
 }
 
 void CardPanel::OnFolderLeftClick(wxMouseEvent &event) {
