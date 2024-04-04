@@ -49,7 +49,7 @@ class ListingWindow : public wxScrolledWindow {
     std::list<std::string> forward_paths;
 
    private:
-    CardPanel* AddNewCard(std::filesystem::directory_entry entry, std::string label = "");
+    CardPanel* AddNewCard(std::filesystem::directory_entry entry);
     void OnBackward(wxEvent& event);
     void OnForward(wxEvent& event);
 };

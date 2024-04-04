@@ -97,9 +97,6 @@ void ListingWindow::RefreshPath(bool reload) {
         for (auto const& entry : std::filesystem::directory_iterator{current}) {
             AddNewCard(entry);
         }
-        if (this->current.has_parent_path() && this->current != this->config.config["root"]) {
-            AddNewCard(std::filesystem::directory_entry(this->current.parent_path()), "..");
-        }
         cards.sort(CardPanel::CompareCards());
     } else {
         std::list<CardPanel*> erase_list;
@@ -201,8 +198,8 @@ FileSystem::Result ListingWindow::Move(CardPanel* card, std::filesystem::path pa
     return result;
 }
 
-CardPanel* ListingWindow::AddNewCard(std::filesystem::directory_entry entry, std::string label) {
-    auto card = new CardPanel(this, entry, label);
+CardPanel* ListingWindow::AddNewCard(std::filesystem::directory_entry entry) {
+    auto card = new CardPanel(this, entry);
     card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
     cards.push_back(card);
     return card;

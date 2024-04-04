@@ -13,13 +13,13 @@
 #include "ListingWindow.hpp"
 #include <wx/utils.h>
 
-CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry, wxString path)
+CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry)
     : wxPanel(parent, wxID_ANY),
       parent(parent),
       file(FileInfo(entry, false)),
-      name(path != "" ? path.ToStdString() : entry.path().filename().string()),
+      name(entry.path().filename().string()),
       image(CreateImage(entry)),
-      label(CreateLabel(entry, path)),
+      label(CreateLabel(entry)),
       m_mouseInside(false),
       selected(false),
       to_remove(false) {
@@ -39,8 +39,8 @@ CardPanel::~CardPanel() {
     delete label;
 }
 
-wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxString path) {
-    wxString name = path.IsEmpty() ? wxString::FromUTF8(entry.path().filename()) : path;
+wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry) {
+    wxString name = wxString::FromUTF8(entry.path().filename());
     wxStaticText *text = new wxStaticText(this, wxID_ANY, name, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
     int max_text_size = 180;
     while (text->m_width > 200) {

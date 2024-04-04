@@ -40,7 +40,7 @@ class CardPanel : public wxPanel {
     bool selected;
     bool to_remove;
 
-    CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry, wxString path = "");
+    CardPanel(ListingWindow* parent, std::filesystem::directory_entry entry);
     ~CardPanel();
 
     void OnFolderLeftClick(wxMouseEvent& event);
@@ -61,7 +61,7 @@ class CardPanel : public wxPanel {
 
     void SelectItem(bool select, bool highlight = true);
    private:
-    wxStaticText* CreateLabel(std::filesystem::directory_entry entry, wxString path);
+    wxStaticText* CreateLabel(std::filesystem::directory_entry entry);
     Image* CreateImage(std::filesystem::directory_entry entry);
     std::pair<CardIterator, CardIterator> GetIterators(CardPanel* c1, CardPanel* c2);
 };
