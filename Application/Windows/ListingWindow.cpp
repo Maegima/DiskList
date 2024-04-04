@@ -34,10 +34,12 @@ ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID i
     forward->SetBitmapHover(rightImageHover);
     backward->SetBitmapHover(leftImageHover);
 
+    breadcrumbs = new wxBoxSizer(wxHORIZONTAL);
+
     Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
     Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
     Bind(wxEVT_CHAR_HOOK, &ListingWindow::OnKeyPress, this, wxID_ANY);
-    
+
     backward->Bind(wxEVT_BUTTON, &ListingWindow::OnBackward, this);
     forward->Bind(wxEVT_BUTTON, &ListingWindow::OnForward, this);
     Bind(wxEVT_AUX1_DOWN, &ListingWindow::OnBackward, this);
@@ -65,25 +67,55 @@ void ListingWindow::OnSize(wxSizeEvent& event) {
 }
 
 void ListingWindow::ChangePath(std::filesystem::path path) {
-    this->current = path;
-    backward->Enable(current != config.config["root"]);
-    forward->Enable(forward_paths.size() > 0);
-    RefreshPath();
+    std::error_code errorcode;
+    if (this->current != path && std::filesystem::is_directory(path, errorcode)) {
+        this->current = path;
+        backward->Enable(current != config.config["root"]);
+        forward->Enable(forward_paths.size() > 0);
+        UpdatePathBreadCrumbs();
+        RefreshPath();
+    }
 }
 
-void ListingWindow::OnBackward(wxEvent &event) {
-    if(current != this->config.config["root"]) {
+void ListingWindow::OnBackward(wxEvent& event) {
+    if (current != this->config.config["root"]) {
         forward_paths.push_front(current);
         ChangePath(current.parent_path());
     }
 }
 
-void ListingWindow::OnForward(wxEvent &event) {
-    if(forward_paths.size() > 0) {
+void ListingWindow::OnForward(wxEvent& event) {
+    if (forward_paths.size() > 0) {
         std::string path = forward_paths.front();
         forward_paths.pop_front();
         ChangePath(path);
     }
+}
+
+void ListingWindow::UpdatePathBreadCrumbs() {
+    size_t rootlength = config.config["root"].length();
+    std::string display = this->current.string().length() <= rootlength ? "" : this->current.string().substr(rootlength + 1);
+    wxArrayString folders = wxSplit(wxString::FromUTF8(display), '/');
+    breadcrumbs->Clear(true);
+    std::filesystem::path path = config.config["root"];
+    for (const auto& folder : folders) {
+        path /= folder.ToUTF8().data();
+        breadcrumbs->Add(CreateBreadCrumbItem("<tt><b>&gt;</b></tt>", false), 0, wxEXPAND | wxALL, 1);
+        auto item = CreateBreadCrumbItem(folder);
+        item->SetName(wxString::FromUTF8(path.string()));
+        item->Bind(wxEVT_BUTTON, &ListingWindow::OnBreadCrumbClick, this);
+        breadcrumbs->Add(item, 0, wxEXPAND | wxALL, 1);
+    }
+    if (folders.empty()) {
+        breadcrumbs->Add(CreateBreadCrumbItem("<tt><b>&gt;</b></tt>", false), 0, wxEXPAND | wxALL, 1);
+    }
+}
+
+wxButton* ListingWindow::CreateBreadCrumbItem(wxString label, bool enabled) {
+    auto item = new wxButton(this->GetParent(), wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxBU_EXACTFIT);
+    item->SetLabelMarkup(label);
+    item->Enable(enabled);
+    return item;
 }
 
 void ListingWindow::RefreshPath(bool reload) {
@@ -113,13 +145,21 @@ void ListingWindow::RefreshPath(bool reload) {
     for (auto const& card : cards) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
     }
-    // this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
+    if (reload) {
+        this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
+    }
     this->SendSizeEvent();
+    this->GetParent()->SendSizeEvent();
     this->Refresh();
 }
 
 void ListingWindow::OnCardMenuClick(wxCommandEvent& evt) {
     ExecuteMenuEvent(evt.GetId());
+}
+
+void ListingWindow::OnBreadCrumbClick(wxCommandEvent& event) {
+    wxButton* breadcrumb = (wxButton*)event.GetEventObject();
+    ChangePath(breadcrumb->GetName().ToUTF8().data());
 }
 
 void ListingWindow::ExecuteMenuEvent(int eventId) {

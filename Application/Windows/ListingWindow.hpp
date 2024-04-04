@@ -27,12 +27,13 @@ class ListingWindow : public wxScrolledWindow {
     void OnFolderMenuClick(wxCommandEvent& event);
     void OnKeyPress(wxKeyEvent& event);
     void OnCardMenuClick(wxCommandEvent& event);
+    void OnBreadCrumbClick(wxCommandEvent& event);
 
     void ChangePath(std::filesystem::path path);
     void RefreshPath(bool reload = true);
 
     void ExecuteMenuEvent(int eventId);
-    bool ExecuteCardEvent(int eventId, CardPanel *card, const std::filesystem::path path);
+    bool ExecuteCardEvent(int eventId, CardPanel* card, const std::filesystem::path path);
 
     FileSystem::Result Move(CardPanel* card, std::filesystem::path path);
 
@@ -44,13 +45,16 @@ class ListingWindow : public wxScrolledWindow {
     int selected_folders;
     int selected_files;
     CardPanel* selected_card;
-    wxBitmapButton *forward;
-    wxBitmapButton *backward;
+    wxBitmapButton* forward;
+    wxBitmapButton* backward;
+    wxBoxSizer* breadcrumbs;
     std::list<std::string> forward_paths;
 
    private:
     CardPanel* AddNewCard(std::filesystem::directory_entry entry);
     void OnBackward(wxEvent& event);
     void OnForward(wxEvent& event);
+    void UpdatePathBreadCrumbs();
+    wxButton* CreateBreadCrumbItem(wxString label, bool enabled = true);
 };
 #endif  // _LISTINGWINDOW_HPP_

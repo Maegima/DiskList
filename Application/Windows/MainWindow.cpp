@@ -25,13 +25,13 @@ MainWindow::MainWindow() : wxFrame(NULL, wxID_ANY, "Disklist", wxDefaultPosition
     toolbarSizer->AddSpacer(1);
     toolbarSizer->Add(lwindow->forward, 0, wxALL);
     toolbarSizer->AddSpacer(3);
-    toolbarSizer->Add(new wxTextCtrl( this, -1, "My text.", wxDefaultPosition, wxSize(100,32)), 1, wxEXPAND);
+    toolbarSizer->Add(lwindow->breadcrumbs, 1, wxEXPAND);
     toolbarSizer->AddSpacer(3);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(toolbarSizer, 0, wxEXPAND);
     sizer->Add(windowSizer, 1, wxEXPAND);
-    
+
     SetSizer(sizer);
 
     CreateStatusBar();
