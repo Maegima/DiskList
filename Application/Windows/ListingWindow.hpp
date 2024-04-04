@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.4
- * @date 2024-04-03
+ * @date 2024-04-04
  *
  * @copyright Copyright (c) 2024
  *
@@ -29,6 +29,8 @@ class ListingWindow : public wxScrolledWindow {
     void OnCardMenuClick(wxCommandEvent& event);
 
     void ChangePath(std::filesystem::path path);
+    void GoBackward();
+    void GoForward();
     void RefreshPath(bool reload = true);
 
     void ExecuteMenuEvent(int eventId);
@@ -47,5 +49,8 @@ class ListingWindow : public wxScrolledWindow {
 
    private:
     CardPanel* AddNewCard(std::filesystem::directory_entry entry, std::string label = "");
+    void SkipMouseEvent(wxMouseEvent &evt);
+
+    std::list<std::string> forward;
 };
 #endif  // _LISTINGWINDOW_HPP_

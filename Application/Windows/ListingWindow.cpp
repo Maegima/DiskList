@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Listing window implementation
  * @version 0.4
- * @date 2024-04-03
+ * @date 2024-04-04
  *
  * @copyright Copyright (c) 2024
  *
@@ -25,6 +25,8 @@ ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID i
     Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
     Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
     Bind(wxEVT_CHAR_HOOK, &ListingWindow::OnKeyPress, this, wxID_ANY);
+    Bind(wxEVT_AUX1_DOWN, &ListingWindow::SkipMouseEvent, this);
+    Bind(wxEVT_AUX2_DOWN, &ListingWindow::SkipMouseEvent, this);
 
     wxWrapSizer* sizer = new wxWrapSizer(wxHORIZONTAL);
     SetSizer(sizer);
@@ -50,6 +52,20 @@ void ListingWindow::OnSize(wxSizeEvent& event) {
 void ListingWindow::ChangePath(std::filesystem::path path) {
     this->current = path;
     RefreshPath();
+}
+
+void ListingWindow::GoBackward() {
+    if(current != this->config.config["root"]) {
+        forward.push_front(current);
+        ChangePath(current.parent_path());
+    }
+}
+
+void ListingWindow::GoForward() {
+    if(forward.size() > 0) {
+        ChangePath(forward.front());
+        forward.pop_front();
+    }
 }
 
 void ListingWindow::RefreshPath(bool reload) {
@@ -174,6 +190,10 @@ CardPanel* ListingWindow::AddNewCard(std::filesystem::directory_entry entry, std
     return card;
 }
 
+void ListingWindow::SkipMouseEvent(wxMouseEvent& evt) {
+    wxQueueEvent(GetParent()->GetEventHandler(), new wxMouseEvent(evt.GetEventType()));
+}
+
 void ListingWindow::OnFolderMenuClick(wxCommandEvent& evt) {
     FileSystem::Result result;
     switch (evt.GetId()) {
@@ -222,4 +242,6 @@ void ListingWindow::OnFolderRightClick(wxMouseEvent& evt) {
     menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     menu.Connect(wxEVT_MENU, wxCommandEventHandler(ListingWindow::OnFolderMenuClick), nullptr, this);
     PopupMenu(&menu);
+    auto event = new wxMouseEvent(evt.GetEventType());
+    wxQueueEvent(GetParent()->GetEventHandler(), event);
 }

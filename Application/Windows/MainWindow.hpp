@@ -2,10 +2,10 @@
  * @file MainWindow.hpp
  * @author André Lucas Maegima
  * @brief Disklist Main Window Definitions
- * @version 0.3
- * @date 2023-11-20
+ * @version 0.4
+ * @date 2024-04-04
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -24,12 +24,14 @@ class MainWindow : public wxFrame {
     MainWindow();
 
    private:
-    void OnHello(wxCommandEvent& event);
-    void OnExit(wxCommandEvent& event);
-    void OnAbout(wxCommandEvent& event);
+    void OnBackward(wxEvent& event);
+    void OnForward(wxEvent& event);
+    void OnKeyPress(wxKeyEvent& event);
 
     ListingWindow* lwindow;
     InfoWindow* iwindow;
+    wxBitmapButton *forward;
+    wxBitmapButton *backward;
 };
 
 #endif /* DISKLIST_MAINWINDOW_HPP_ */
