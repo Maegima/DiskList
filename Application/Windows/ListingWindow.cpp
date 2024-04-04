@@ -22,11 +22,26 @@ ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID i
       selected_card(nullptr) {
     SetBackgroundColour(*wxWHITE);
 
+    wxImage rightImage = config.image["forward"]->Scale(38, 38, wxIMAGE_QUALITY_HIGH);
+    wxImage leftImage = config.image["backward"]->Scale(38, 38, wxIMAGE_QUALITY_HIGH);
+    wxImage rightImageHover = rightImage.Copy();
+    wxImage leftImageHover = leftImage.Copy();
+    leftImageHover.ChangeHSV(1, 1, -0.25);
+    rightImageHover.ChangeHSV(1, 1, -0.25);
+
+    forward = new wxBitmapButton(this->GetParent(), wxID_FORWARD, rightImage, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
+    backward = new wxBitmapButton(this->GetParent(), wxID_BACKWARD, leftImage, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
+    forward->SetBitmapHover(rightImageHover);
+    backward->SetBitmapHover(leftImageHover);
+
     Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
     Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
     Bind(wxEVT_CHAR_HOOK, &ListingWindow::OnKeyPress, this, wxID_ANY);
-    Bind(wxEVT_AUX1_DOWN, &ListingWindow::SkipMouseEvent, this);
-    Bind(wxEVT_AUX2_DOWN, &ListingWindow::SkipMouseEvent, this);
+    
+    backward->Bind(wxEVT_BUTTON, &ListingWindow::OnBackward, this);
+    forward->Bind(wxEVT_BUTTON, &ListingWindow::OnForward, this);
+    Bind(wxEVT_AUX1_DOWN, &ListingWindow::OnBackward, this);
+    Bind(wxEVT_AUX2_DOWN, &ListingWindow::OnForward, this);
 
     wxWrapSizer* sizer = new wxWrapSizer(wxHORIZONTAL);
     SetSizer(sizer);
@@ -51,20 +66,23 @@ void ListingWindow::OnSize(wxSizeEvent& event) {
 
 void ListingWindow::ChangePath(std::filesystem::path path) {
     this->current = path;
+    backward->Enable(current != config.config["root"]);
+    forward->Enable(forward_paths.size() > 0);
     RefreshPath();
 }
 
-void ListingWindow::GoBackward() {
+void ListingWindow::OnBackward(wxEvent &event) {
     if(current != this->config.config["root"]) {
-        forward.push_front(current);
+        forward_paths.push_front(current);
         ChangePath(current.parent_path());
     }
 }
 
-void ListingWindow::GoForward() {
-    if(forward.size() > 0) {
-        ChangePath(forward.front());
-        forward.pop_front();
+void ListingWindow::OnForward(wxEvent &event) {
+    if(forward_paths.size() > 0) {
+        std::string path = forward_paths.front();
+        forward_paths.pop_front();
+        ChangePath(path);
     }
 }
 
@@ -190,10 +208,6 @@ CardPanel* ListingWindow::AddNewCard(std::filesystem::directory_entry entry, std
     return card;
 }
 
-void ListingWindow::SkipMouseEvent(wxMouseEvent& evt) {
-    wxQueueEvent(GetParent()->GetEventHandler(), new wxMouseEvent(evt.GetEventType()));
-}
-
 void ListingWindow::OnFolderMenuClick(wxCommandEvent& evt) {
     FileSystem::Result result;
     switch (evt.GetId()) {
@@ -229,6 +243,15 @@ void ListingWindow::OnKeyPress(wxKeyEvent& event) {
                 }
                 break;
         }
+    } else if (event.AltDown()) {
+        switch (uc) {
+            case WXK_LEFT:
+                OnBackward(event);
+                break;
+            case WXK_RIGHT:
+                OnForward(event);
+                break;
+        }
     }
     if (uc >= WXK_F6 || uc <= WXK_F7) {
         ExecuteMenuEvent(MOVE_TO_FOLDER + 1 + uc - WXK_F6);
@@ -242,6 +265,4 @@ void ListingWindow::OnFolderRightClick(wxMouseEvent& evt) {
     menu.Append(DELETE_EMPTY_FOLDERS, "Delete empty folders...");
     menu.Connect(wxEVT_MENU, wxCommandEventHandler(ListingWindow::OnFolderMenuClick), nullptr, this);
     PopupMenu(&menu);
-    auto event = new wxMouseEvent(evt.GetEventType());
-    wxQueueEvent(GetParent()->GetEventHandler(), event);
 }

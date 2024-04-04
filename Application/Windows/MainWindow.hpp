@@ -24,14 +24,8 @@ class MainWindow : public wxFrame {
     MainWindow();
 
    private:
-    void OnBackward(wxEvent& event);
-    void OnForward(wxEvent& event);
-    void OnKeyPress(wxKeyEvent& event);
-
     ListingWindow* lwindow;
     InfoWindow* iwindow;
-    wxBitmapButton *forward;
-    wxBitmapButton *backward;
 };
 
 #endif /* DISKLIST_MAINWINDOW_HPP_ */

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.4
- * @date 2024-04-03
+ * @date 2024-04-04
  *
  * @copyright Copyright (c) 2024
  *
@@ -144,6 +144,7 @@ void CardPanel::OnTextClick(wxMouseEvent &event) {
 }
 
 void CardPanel::OnFolderLeftClick(wxMouseEvent &event) {
+    parent->forward_paths.clear();
     parent->ChangePath(file.path);
 }
 
