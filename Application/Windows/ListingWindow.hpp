@@ -20,9 +20,11 @@
 #include "Controllers/FileSystem.hpp"
 #include "Controllers/Configuration.hpp"
 
-class ListingWindow : public wxScrolledWindow {
+class ListingWindow : public wxFrame {
    public:
     ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size);
+    wxScrolledWindow* CreateListingPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size);
+
     void OnSize(wxSizeEvent& event);
     void OnFolderRightClick(wxMouseEvent& event);
     void OnFolderMenuClick(wxCommandEvent& event);
@@ -49,6 +51,7 @@ class ListingWindow : public wxScrolledWindow {
     int selected_folders;
     int selected_files;
     CardPanel* selected_card;
+    wxScrolledWindow* listing;
     wxBitmapButton* forward;
     wxBitmapButton* backward;
     wxBoxSizer* breadcrumbs;

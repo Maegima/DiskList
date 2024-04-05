@@ -14,8 +14,8 @@
 #include "Controllers/Algorithm.hpp"
 
 ListingWindow::ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)
-    : wxScrolledWindow(parent, id, pos, size, wxSUNKEN_BORDER),
-      iwindow(new InfoWindow(parent, wxID_ANY, wxPoint(800, 0), wxSize(250, 600))),
+    : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1200, 600)),
+      iwindow(new InfoWindow(this, wxID_ANY, wxPoint(800, 0), wxSize(250, 600))),
       config(".conf"),
       selected_folders(0),
       selected_files(0),
@@ -29,39 +29,52 @@ ListingWindow::ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos
     leftImageHover.ChangeHSV(1, 1, -0.25);
     rightImageHover.ChangeHSV(1, 1, -0.25);
 
-    forward = new wxBitmapButton(this->GetParent(), wxID_FORWARD, rightImage, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
-    backward = new wxBitmapButton(this->GetParent(), wxID_BACKWARD, leftImage, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
+    forward = new wxBitmapButton(this, wxID_FORWARD, rightImage, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
+    backward = new wxBitmapButton(this, wxID_BACKWARD, leftImage, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
     forward->SetBitmapHover(rightImageHover);
     backward->SetBitmapHover(leftImageHover);
 
-    breadcrumbs = new wxBoxSizer(wxHORIZONTAL);
-
-    Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
-    Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
-    Bind(wxEVT_CHAR_HOOK, &ListingWindow::OnKeyPress, this, wxID_ANY);
-
     backward->Bind(wxEVT_BUTTON, &ListingWindow::OnBackward, this);
     forward->Bind(wxEVT_BUTTON, &ListingWindow::OnForward, this);
-    Bind(wxEVT_AUX1_DOWN, &ListingWindow::OnBackward, this);
-    Bind(wxEVT_AUX2_DOWN, &ListingWindow::OnForward, this);
+
+    breadcrumbs = new wxBoxSizer(wxHORIZONTAL);
+
+    listing = CreateListingPanel(this, id, pos, size);
+
+    wxBoxSizer *mainsizer = new wxBoxSizer(wxVERTICAL);
+    mainsizer->Add(CreateToolbarSizer(), 0, wxEXPAND);
+    mainsizer->Add(CreateWindowSizer(), 1, wxEXPAND);
+    SetSizer(mainsizer);
+
+    ChangePath(config.config["root"]);
+}
+
+wxScrolledWindow* ListingWindow::CreateListingPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size) {
+    wxScrolledWindow *window = new wxScrolledWindow(parent, id, pos, size, wxSUNKEN_BORDER);
+    window->Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
+    window->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
+    window->Bind(wxEVT_CHAR_HOOK, &ListingWindow::OnKeyPress, this, wxID_ANY);
+
+    window->Bind(wxEVT_AUX1_DOWN, &ListingWindow::OnBackward, this);
+    window->Bind(wxEVT_AUX2_DOWN, &ListingWindow::OnForward, this);
 
     wxWrapSizer* sizer = new wxWrapSizer(wxHORIZONTAL);
-    SetSizer(sizer);
-    ChangePath(config.config["root"]);
+    window->SetSizer(sizer);
 
-    this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
+    window->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
+    return window;
 }
 
 void ListingWindow::OnSize(wxSizeEvent& event) {
-    int width = this->m_width;
+    int width = listing->m_width;
     int items = width / 200;
     int spacing = items ? (width % 200) / items : 0;
-    auto sizer = GetSizer();
+    auto sizer = listing->GetSizer();
     for (auto& item : sizer->GetChildren()) {
         item->SetBorder(spacing / 2);
     }
-    auto newSize = this->m_parent->GetClientSize();
-    this->SetSize(newSize.x - 250, newSize.y);
+    auto newSize = this->GetClientSize();
+    listing->SetSize(newSize.x - 250, newSize.y);
     Refresh();
     event.Skip();
 }
@@ -112,18 +125,18 @@ void ListingWindow::UpdatePathBreadCrumbs() {
 }
 
 wxButton* ListingWindow::CreateBreadCrumbItem(wxString label, bool enabled) {
-    auto item = new wxButton(this->GetParent(), wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxBU_EXACTFIT);
+    auto item = new wxButton(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxBU_EXACTFIT);
     item->SetLabelMarkup(label);
     item->Enable(enabled);
     return item;
 }
 
 void ListingWindow::RefreshPath(bool reload) {
-    auto* sizer = this->GetSizer();
+    auto* sizer = listing->GetSizer();
     sizer->Clear(reload);
     this->selected_files = 0;
     this->selected_folders = 0;
-    this->SetFocus();
+    listing->SetFocus();
     if (reload) {
         this->cards.clear();
         for (auto const& entry : std::filesystem::directory_iterator{current}) {
@@ -146,11 +159,11 @@ void ListingWindow::RefreshPath(bool reload) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
     }
     if (reload) {
-        this->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
+        listing->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
     }
+    listing->SendSizeEvent();
     this->SendSizeEvent();
-    this->GetParent()->SendSizeEvent();
-    this->Refresh();
+    listing->Refresh();
 }
 
 void ListingWindow::OnCardMenuClick(wxCommandEvent& evt) {
@@ -226,7 +239,7 @@ bool ListingWindow::ExecuteCardEvent(int eventId, CardPanel* card, const std::fi
 
 wxBoxSizer* ListingWindow::CreateWindowSizer() {
     wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(this, wxEXPAND);
+    sizer->Add(listing, wxEXPAND);
     sizer->Add(iwindow);
     return sizer;
 }

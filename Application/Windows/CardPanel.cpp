@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.4
- * @date 2024-04-04
+ * @date 2024-04-05
  *
  * @copyright Copyright (c) 2024
  *
@@ -14,7 +14,7 @@
 #include <wx/utils.h>
 
 CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry)
-    : wxPanel(parent, wxID_ANY),
+    : wxPanel(parent->listing, wxID_ANY),
       parent(parent),
       file(FileInfo(entry, false)),
       name(entry.path().filename().string()),

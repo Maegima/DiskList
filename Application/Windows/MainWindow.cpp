@@ -15,8 +15,7 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaultPosit
     lwindow = new ListingWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-    sizer->Add(lwindow->CreateToolbarSizer(), 0, wxEXPAND);
-    sizer->Add(lwindow->CreateWindowSizer(), 1, wxEXPAND);
+    sizer->Add(lwindow, 1, wxEXPAND);
 
     SetSizer(sizer);
 
