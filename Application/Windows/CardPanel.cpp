@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.4
- * @date 2024-04-03
+ * @date 2024-04-04
  *
  * @copyright Copyright (c) 2024
  *
@@ -13,13 +13,13 @@
 #include "ListingWindow.hpp"
 #include <wx/utils.h>
 
-CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry, wxString path)
+CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry)
     : wxPanel(parent, wxID_ANY),
       parent(parent),
       file(FileInfo(entry, false)),
-      name(path != "" ? path.ToStdString() : entry.path().filename().string()),
+      name(entry.path().filename().string()),
       image(CreateImage(entry)),
-      label(CreateLabel(entry, path)),
+      label(CreateLabel(entry)),
       m_mouseInside(false),
       selected(false),
       to_remove(false) {
@@ -32,6 +32,8 @@ CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry ent
     std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::tolower(c); });
     Bind(wxEVT_ENTER_WINDOW, &CardPanel::OnEnterPanel, this);
     Bind(wxEVT_LEAVE_WINDOW, &CardPanel::OnLeavePanel, this);
+    Bind(wxEVT_AUX1_DOWN, &CardPanel::SkipMouseEvent, this);
+    Bind(wxEVT_AUX2_DOWN, &CardPanel::SkipMouseEvent, this);
 }
 
 CardPanel::~CardPanel() {
@@ -39,8 +41,8 @@ CardPanel::~CardPanel() {
     delete label;
 }
 
-wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxString path) {
-    wxString name = path.IsEmpty() ? wxString::FromUTF8(entry.path().filename()) : path;
+wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry) {
+    wxString name = wxString::FromUTF8(entry.path().filename());
     wxStaticText *text = new wxStaticText(this, wxID_ANY, name, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
     int max_text_size = 180;
     while (text->m_width > 200) {
@@ -61,6 +63,8 @@ wxStaticText *CardPanel::CreateLabel(std::filesystem::directory_entry entry, wxS
     }
     text->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnTextClick, this, wxID_ANY);
     text->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnRightClick, this, wxID_ANY);
+    text->Bind(wxEVT_AUX1_DOWN, &CardPanel::SkipMouseEvent, this);
+    text->Bind(wxEVT_AUX2_DOWN, &CardPanel::SkipMouseEvent, this);
     return text;
 }
 
@@ -75,6 +79,8 @@ Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
     }
     img->Bind(wxEVT_LEFT_DOWN, &CardPanel::OnLeftClick, this, wxID_ANY);
     img->Bind(wxEVT_RIGHT_DOWN, &CardPanel::OnRightClick, this, wxID_ANY);
+    img->Bind(wxEVT_AUX1_DOWN, &CardPanel::SkipMouseEvent, this);
+    img->Bind(wxEVT_AUX2_DOWN, &CardPanel::SkipMouseEvent, this);
     return img;
 }
 
@@ -143,7 +149,12 @@ void CardPanel::OnTextClick(wxMouseEvent &event) {
     event.Skip();
 }
 
+void CardPanel::SkipMouseEvent(wxMouseEvent &event) {
+    wxQueueEvent(GetParent()->GetEventHandler(), new wxMouseEvent(event.GetEventType()));
+}
+
 void CardPanel::OnFolderLeftClick(wxMouseEvent &event) {
+    parent->forward_paths.clear();
     parent->ChangePath(file.path);
 }
 
