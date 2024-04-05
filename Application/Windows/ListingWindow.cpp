@@ -13,8 +13,7 @@
 #include "ListingWindow.hpp"
 #include "Controllers/Algorithm.hpp"
 
-ListingWindow::ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)
-    : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1200, 600)),
+ListingWindow::ListingWindow() : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1200, 600)),
       iwindow(new InfoWindow(this, wxID_ANY, wxPoint(800, 0), wxSize(250, 600))),
       config(".conf"),
       selected_folders(0),
@@ -39,7 +38,7 @@ ListingWindow::ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos
 
     breadcrumbs = new wxBoxSizer(wxHORIZONTAL);
 
-    listing = CreateListingPanel(this, id, pos, size);
+    listing = CreateListingPanel();
 
     wxBoxSizer *mainsizer = new wxBoxSizer(wxVERTICAL);
     mainsizer->Add(CreateToolbarSizer(), 0, wxEXPAND);
@@ -49,8 +48,8 @@ ListingWindow::ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos
     ChangePath(config.config["root"]);
 }
 
-wxScrolledWindow* ListingWindow::CreateListingPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size) {
-    wxScrolledWindow *window = new wxScrolledWindow(parent, id, pos, size, wxSUNKEN_BORDER);
+wxScrolledWindow* ListingWindow::CreateListingPanel() {
+    wxScrolledWindow *window = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER);
     window->Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
     window->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
     window->Bind(wxEVT_CHAR_HOOK, &ListingWindow::OnKeyPress, this, wxID_ANY);

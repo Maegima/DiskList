@@ -22,8 +22,8 @@
 
 class ListingWindow : public wxFrame {
    public:
-    ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size);
-    wxScrolledWindow* CreateListingPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size);
+    ListingWindow();
+    wxScrolledWindow* CreateListingPanel();
 
     void OnSize(wxSizeEvent& event);
     void OnFolderRightClick(wxMouseEvent& event);

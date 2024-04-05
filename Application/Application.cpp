@@ -14,7 +14,7 @@
 
 bool Application::OnInit() {
     wxLog::SetActiveTarget(new wxLogStderr());
-    ListingWindow* window = new ListingWindow(nullptr, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    ListingWindow* window = new ListingWindow();
     window->Show(true);
     return true;
 }
