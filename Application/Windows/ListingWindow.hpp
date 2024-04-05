@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.4
- * @date 2024-04-04
+ * @date 2024-04-05
  *
  * @copyright Copyright (c) 2024
  *
@@ -13,6 +13,7 @@
 #define _LISTINGWINDOW_HPP_
 
 #include <wx/wx.h>
+#include <wx/sizer.h>
 #include <map>
 #include "CardPanel.hpp"
 #include "InfoWindow.hpp"
@@ -21,7 +22,7 @@
 
 class ListingWindow : public wxScrolledWindow {
    public:
-    ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID id, const wxPoint& pos, const wxSize& size);
+    ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size);
     void OnSize(wxSizeEvent& event);
     void OnFolderRightClick(wxMouseEvent& event);
     void OnFolderMenuClick(wxCommandEvent& event);
@@ -34,6 +35,9 @@ class ListingWindow : public wxScrolledWindow {
 
     void ExecuteMenuEvent(int eventId);
     bool ExecuteCardEvent(int eventId, CardPanel* card, const std::filesystem::path path);
+
+    wxBoxSizer* CreateToolbarSizer();
+    wxBoxSizer* CreateWindowSizer();
 
     FileSystem::Result Move(CardPanel* card, std::filesystem::path path);
 

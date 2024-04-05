@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Listing window implementation
  * @version 0.4
- * @date 2024-04-04
+ * @date 2024-04-05
  *
  * @copyright Copyright (c) 2024
  *
@@ -13,9 +13,9 @@
 #include "ListingWindow.hpp"
 #include "Controllers/Algorithm.hpp"
 
-ListingWindow::ListingWindow(wxWindow* parent, InfoWindow* iwindow, wxWindowID id, const wxPoint& pos, const wxSize& size)
+ListingWindow::ListingWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)
     : wxScrolledWindow(parent, id, pos, size, wxSUNKEN_BORDER),
-      iwindow(iwindow),
+      iwindow(new InfoWindow(parent, wxID_ANY, wxPoint(800, 0), wxSize(250, 600))),
       config(".conf"),
       selected_folders(0),
       selected_files(0),
@@ -222,6 +222,25 @@ bool ListingWindow::ExecuteCardEvent(int eventId, CardPanel* card, const std::fi
         }
     }
     return refresh;
+}
+
+wxBoxSizer* ListingWindow::CreateWindowSizer() {
+    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(this, wxEXPAND);
+    sizer->Add(iwindow);
+    return sizer;
+}
+
+wxBoxSizer* ListingWindow::CreateToolbarSizer() {
+    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer->AddSpacer(3);
+    sizer->Add(this->backward, 0, wxALL);
+    sizer->AddSpacer(1);
+    sizer->Add(this->forward, 0, wxALL);
+    sizer->AddSpacer(3);
+    sizer->Add(this->breadcrumbs, 1, wxEXPAND);
+    sizer->AddSpacer(3);
+    return sizer;
 }
 
 FileSystem::Result ListingWindow::Move(CardPanel* card, std::filesystem::path path) {

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Disklist Main Window Definitions
  * @version 0.4
- * @date 2024-04-04
+ * @date 2024-04-05
  *
  * @copyright Copyright (c) 2024
  *
@@ -25,7 +25,6 @@ class MainWindow : public wxFrame {
 
    private:
     ListingWindow* lwindow;
-    InfoWindow* iwindow;
 };
 
 #endif /* DISKLIST_MAINWINDOW_HPP_ */
