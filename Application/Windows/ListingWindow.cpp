@@ -14,16 +14,15 @@
 #include "Controllers/Algorithm.hpp"
 
 ListingWindow::ListingWindow() : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1200, 600)),
-      config(".conf"),
-      lwindow(CreateListingPanel()),
-      iwindow(new InfoWindow(this, wxID_ANY, wxPoint(800, 0), wxSize(250, 600))),
-      breadcrumbs(new wxBoxSizer(wxHORIZONTAL)),
-      forward(CreateBitmapButton(wxID_FORWARD, "forward")),
-      backward(CreateBitmapButton(wxID_BACKWARD, "backward")),
-      selected_folders(0),
-      selected_files(0),
-      selected_card(nullptr) {
-    SetBackgroundColour(*wxWHITE);
+    config(".conf"),
+    lwindow(CreateListingPanel()),
+    iwindow(new InfoWindow(this, wxID_ANY, wxPoint(800, 0), wxSize(250, 600))),
+    breadcrumbs(new wxBoxSizer(wxHORIZONTAL)),
+    forward(CreateBitmapButton(wxID_FORWARD, "forward")),
+    backward(CreateBitmapButton(wxID_BACKWARD, "backward")),
+    selected_folders(0),
+    selected_files(0),
+    selected_card(nullptr) {
     forward->Bind(wxEVT_BUTTON, &ListingWindow::OnForward, this);
     backward->Bind(wxEVT_BUTTON, &ListingWindow::OnBackward, this);
 
@@ -33,7 +32,8 @@ ListingWindow::ListingWindow() : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaul
 }
 
 wxScrolledWindow* ListingWindow::CreateListingPanel() {
-    wxScrolledWindow *window = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER);
+    wxScrolledWindow* window = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER);
+    window->SetBackgroundColour(*wxWHITE);
     window->Bind(wxEVT_SIZE, &ListingWindow::OnSize, this, wxID_ANY);
     window->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
     window->Bind(wxEVT_CHAR_HOOK, &ListingWindow::OnKeyPress, this, wxID_ANY);
@@ -52,13 +52,13 @@ wxBitmapButton* ListingWindow::CreateBitmapButton(wxWindowID id, std::string nam
     wxImage image = config.image[name]->Scale(38, 38, wxIMAGE_QUALITY_HIGH);
     wxImage image_hover = image.Copy();
     image_hover.ChangeHSV(1, 1, -0.25);
-    wxBitmapButton *btn = new wxBitmapButton(this, id, image, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE); 
+    wxBitmapButton* btn = new wxBitmapButton(this, id, image, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
     btn->SetBitmapHover(image_hover);
     return btn;
 }
 
 wxBoxSizer* ListingWindow::CreateSizer() {
-    wxBoxSizer *toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer* toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
     toolbarSizer->AddSpacer(3);
     toolbarSizer->Add(backward, 0, wxALL);
     toolbarSizer->AddSpacer(1);
@@ -66,12 +66,12 @@ wxBoxSizer* ListingWindow::CreateSizer() {
     toolbarSizer->AddSpacer(3);
     toolbarSizer->Add(breadcrumbs, 1, wxEXPAND);
     toolbarSizer->AddSpacer(3);
-    
-    wxBoxSizer *windowSizer = new wxBoxSizer(wxHORIZONTAL);
+
+    wxBoxSizer* windowSizer = new wxBoxSizer(wxHORIZONTAL);
     windowSizer->Add(lwindow, wxEXPAND);
     windowSizer->Add(iwindow);
-    
-    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(toolbarSizer, 0, wxEXPAND);
     sizer->Add(windowSizer, 1, wxEXPAND);
     return sizer;
@@ -127,16 +127,11 @@ void ListingWindow::RefreshPath(bool reload) {
         }
         cards.sort(CardPanel::CompareCards());
     } else {
-        std::list<CardPanel*> erase_list;
-        for (auto const& card : cards) {
-            if (card->to_remove) {
-                erase_list.push_back(card);
-            }
-        }
-        std::erase_if(cards, [](CardPanel* card) { return card->to_remove; });
-        for (auto card : erase_list) {
-            delete card;
-        }
+        std::erase_if(cards, [](CardPanel* card) {
+            bool result = card->to_remove;
+            if (result) delete card;
+            return result;
+        });
     }
     for (auto const& card : cards) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
@@ -219,9 +214,7 @@ FileSystem::Result ListingWindow::Move(CardPanel* card, std::filesystem::path pa
             cards.sort(CardPanel::CompareCards());
         }
     }
-    if (result) {
-        card->to_remove = true;
-    }
+    card->to_remove = result;
     return result;
 }
 
