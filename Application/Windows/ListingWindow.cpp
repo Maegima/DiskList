@@ -14,36 +14,20 @@
 #include "Controllers/Algorithm.hpp"
 
 ListingWindow::ListingWindow() : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1200, 600)),
-      iwindow(new InfoWindow(this, wxID_ANY, wxPoint(800, 0), wxSize(250, 600))),
       config(".conf"),
+      lwindow(CreateListingPanel()),
+      iwindow(new InfoWindow(this, wxID_ANY, wxPoint(800, 0), wxSize(250, 600))),
+      breadcrumbs(new wxBoxSizer(wxHORIZONTAL)),
+      forward(CreateBitmapButton(wxID_FORWARD, "forward")),
+      backward(CreateBitmapButton(wxID_BACKWARD, "backward")),
       selected_folders(0),
       selected_files(0),
       selected_card(nullptr) {
     SetBackgroundColour(*wxWHITE);
-
-    wxImage rightImage = config.image["forward"]->Scale(38, 38, wxIMAGE_QUALITY_HIGH);
-    wxImage leftImage = config.image["backward"]->Scale(38, 38, wxIMAGE_QUALITY_HIGH);
-    wxImage rightImageHover = rightImage.Copy();
-    wxImage leftImageHover = leftImage.Copy();
-    leftImageHover.ChangeHSV(1, 1, -0.25);
-    rightImageHover.ChangeHSV(1, 1, -0.25);
-
-    forward = new wxBitmapButton(this, wxID_FORWARD, rightImage, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
-    backward = new wxBitmapButton(this, wxID_BACKWARD, leftImage, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE);
-    forward->SetBitmapHover(rightImageHover);
-    backward->SetBitmapHover(leftImageHover);
-
-    backward->Bind(wxEVT_BUTTON, &ListingWindow::OnBackward, this);
     forward->Bind(wxEVT_BUTTON, &ListingWindow::OnForward, this);
+    backward->Bind(wxEVT_BUTTON, &ListingWindow::OnBackward, this);
 
-    breadcrumbs = new wxBoxSizer(wxHORIZONTAL);
-
-    listing = CreateListingPanel();
-
-    wxBoxSizer *mainsizer = new wxBoxSizer(wxVERTICAL);
-    mainsizer->Add(CreateToolbarSizer(), 0, wxEXPAND);
-    mainsizer->Add(CreateWindowSizer(), 1, wxEXPAND);
-    SetSizer(mainsizer);
+    SetSizer(CreateSizer());
 
     ChangePath(config.config["root"]);
 }
@@ -64,18 +48,33 @@ wxScrolledWindow* ListingWindow::CreateListingPanel() {
     return window;
 }
 
-void ListingWindow::OnSize(wxSizeEvent& event) {
-    int width = listing->m_width;
-    int items = width / 200;
-    int spacing = items ? (width % 200) / items : 0;
-    auto sizer = listing->GetSizer();
-    for (auto& item : sizer->GetChildren()) {
-        item->SetBorder(spacing / 2);
-    }
-    auto newSize = this->GetClientSize();
-    listing->SetSize(newSize.x - 250, newSize.y);
-    Refresh();
-    event.Skip();
+wxBitmapButton* ListingWindow::CreateBitmapButton(wxWindowID id, std::string name) {
+    wxImage image = config.image[name]->Scale(38, 38, wxIMAGE_QUALITY_HIGH);
+    wxImage image_hover = image.Copy();
+    image_hover.ChangeHSV(1, 1, -0.25);
+    wxBitmapButton *btn = new wxBitmapButton(this, id, image, wxDefaultPosition, wxSize(32, 32), wxBORDER_NONE); 
+    btn->SetBitmapHover(image_hover);
+    return btn;
+}
+
+wxBoxSizer* ListingWindow::CreateSizer() {
+    wxBoxSizer *toolbarSizer = new wxBoxSizer(wxHORIZONTAL);
+    toolbarSizer->AddSpacer(3);
+    toolbarSizer->Add(backward, 0, wxALL);
+    toolbarSizer->AddSpacer(1);
+    toolbarSizer->Add(forward, 0, wxALL);
+    toolbarSizer->AddSpacer(3);
+    toolbarSizer->Add(breadcrumbs, 1, wxEXPAND);
+    toolbarSizer->AddSpacer(3);
+    
+    wxBoxSizer *windowSizer = new wxBoxSizer(wxHORIZONTAL);
+    windowSizer->Add(lwindow, wxEXPAND);
+    windowSizer->Add(iwindow);
+    
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(toolbarSizer, 0, wxEXPAND);
+    sizer->Add(windowSizer, 1, wxEXPAND);
+    return sizer;
 }
 
 void ListingWindow::ChangePath(std::filesystem::path path) {
@@ -86,21 +85,6 @@ void ListingWindow::ChangePath(std::filesystem::path path) {
         forward->Enable(forward_paths.size() > 0);
         UpdatePathBreadCrumbs();
         RefreshPath();
-    }
-}
-
-void ListingWindow::OnBackward(wxEvent& event) {
-    if (current != this->config.config["root"]) {
-        forward_paths.push_front(current);
-        ChangePath(current.parent_path());
-    }
-}
-
-void ListingWindow::OnForward(wxEvent& event) {
-    if (forward_paths.size() > 0) {
-        std::string path = forward_paths.front();
-        forward_paths.pop_front();
-        ChangePath(path);
     }
 }
 
@@ -131,11 +115,11 @@ wxButton* ListingWindow::CreateBreadCrumbItem(wxString label, bool enabled) {
 }
 
 void ListingWindow::RefreshPath(bool reload) {
-    auto* sizer = listing->GetSizer();
+    auto* sizer = lwindow->GetSizer();
     sizer->Clear(reload);
     this->selected_files = 0;
     this->selected_folders = 0;
-    listing->SetFocus();
+    lwindow->SetFocus();
     if (reload) {
         this->cards.clear();
         for (auto const& entry : std::filesystem::directory_iterator{current}) {
@@ -158,20 +142,11 @@ void ListingWindow::RefreshPath(bool reload) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
     }
     if (reload) {
-        listing->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
+        lwindow->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
     }
-    listing->SendSizeEvent();
+    lwindow->SendSizeEvent();
     this->SendSizeEvent();
-    listing->Refresh();
-}
-
-void ListingWindow::OnCardMenuClick(wxCommandEvent& evt) {
-    ExecuteMenuEvent(evt.GetId());
-}
-
-void ListingWindow::OnBreadCrumbClick(wxCommandEvent& event) {
-    wxButton* breadcrumb = (wxButton*)event.GetEventObject();
-    ChangePath(breadcrumb->GetName().ToUTF8().data());
+    lwindow->Refresh();
 }
 
 void ListingWindow::ExecuteMenuEvent(int eventId) {
@@ -236,25 +211,6 @@ bool ListingWindow::ExecuteCardEvent(int eventId, CardPanel* card, const std::fi
     return refresh;
 }
 
-wxBoxSizer* ListingWindow::CreateWindowSizer() {
-    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(listing, wxEXPAND);
-    sizer->Add(iwindow);
-    return sizer;
-}
-
-wxBoxSizer* ListingWindow::CreateToolbarSizer() {
-    wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->AddSpacer(3);
-    sizer->Add(this->backward, 0, wxALL);
-    sizer->AddSpacer(1);
-    sizer->Add(this->forward, 0, wxALL);
-    sizer->AddSpacer(3);
-    sizer->Add(this->breadcrumbs, 1, wxEXPAND);
-    sizer->AddSpacer(3);
-    return sizer;
-}
-
 FileSystem::Result ListingWindow::Move(CardPanel* card, std::filesystem::path path) {
     auto result = FileSystem::Move(card->file.path, path);
     for (const auto& item : result.created) {
@@ -274,6 +230,40 @@ CardPanel* ListingWindow::AddNewCard(std::filesystem::directory_entry entry) {
     card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
     cards.push_back(card);
     return card;
+}
+
+void ListingWindow::OnSize(wxSizeEvent& event) {
+    int width = lwindow->m_width;
+    int items = width / 200;
+    int spacing = items ? (width % 200) / items : 0;
+    auto sizer = lwindow->GetSizer();
+    for (auto& item : sizer->GetChildren()) {
+        item->SetBorder(spacing / 2);
+    }
+    auto newSize = this->GetClientSize();
+    lwindow->SetSize(newSize.x - 250, newSize.y);
+    Refresh();
+    event.Skip();
+}
+
+void ListingWindow::OnBackward(wxEvent& event) {
+    if (current != this->config.config["root"]) {
+        forward_paths.push_front(current);
+        ChangePath(current.parent_path());
+    }
+}
+
+void ListingWindow::OnForward(wxEvent& event) {
+    if (forward_paths.size() > 0) {
+        std::string path = forward_paths.front();
+        forward_paths.pop_front();
+        ChangePath(path);
+    }
+}
+
+void ListingWindow::OnBreadCrumbClick(wxCommandEvent& event) {
+    wxButton* breadcrumb = (wxButton*)event.GetEventObject();
+    ChangePath(breadcrumb->GetName().ToUTF8().data());
 }
 
 void ListingWindow::OnFolderMenuClick(wxCommandEvent& evt) {
