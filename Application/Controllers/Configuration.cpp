@@ -11,20 +11,7 @@
 
 #include <iostream>
 #include "Configuration.hpp"
-
-std::vector<std::string> split(const std::string str, char delimiter) {
-    size_t pos = 0;
-    std::string token;
-    std::string s = str;
-    std::vector<std::string> list;
-    while ((pos = s.find(delimiter)) != std::string::npos) {
-        token = s.substr(0, pos);
-        s.erase(0, pos + 1);
-        list.push_back(token);
-    }
-    list.push_back(s);
-    return list;
-}
+#include "Algorithm.hpp"
 
 Configuration::Configuration(const std::string path) : file(std::fstream(path, std::ios::in)) {
     std::string data;
@@ -51,12 +38,12 @@ Configuration::Configuration(const std::string path) : file(std::fstream(path, s
                 }
             } else if (space == "organize") {
                 for (auto &[key, value] : items) {
-                    organize.insert({key, split(value, ',')});
+                    organize.insert({key, Algorithm::split<std::vector>(value, ',')});
                 }
             } else if (space == "image") {
                 for (auto &[key, value] : items) {
                     if(key == "dynamic") {
-                        image_extension = split(value, ',');
+                        image_extension = Algorithm::split<std::vector>(value, ',');
                     } else {
                         image.insert({key, new wxImage(value, wxBITMAP_TYPE_PNG)});
                     }
