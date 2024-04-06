@@ -2,10 +2,10 @@
  * @file Configuration.hpp
  * @author André Lucas Maegima
  * @brief Configuration file class definition
- * @version 0.3
- * @date 2023-12-26
+ * @version 0.4
+ * @date 2024-04-06
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 

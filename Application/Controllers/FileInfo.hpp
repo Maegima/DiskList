@@ -2,8 +2,8 @@
  * @file FileInfo.hpp
  * @author André Lucas Maegima
  * @brief Class to extract file infomations.
- * @version 0.3
- * @date 2024-04-02
+ * @version 0.4
+ * @date 2024-04-06
  *
  * @copyright Copyright (c) 2024
  *
@@ -38,6 +38,7 @@ class FileInfo {
     std::string modified_str() const;
     std::string accessed_str() const;
     std::string type_str() const;
+    const std::string operator[](std::string idx) const;
 };
 
 std::ostream& operator<<(std::ostream& os, const FileInfo& file);

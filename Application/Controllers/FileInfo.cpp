@@ -2,8 +2,8 @@
  * @file FileInfo.cpp
  * @author André Lucas Maegima
  * @brief Class to extract file infomations.
- * @version 0.3
- * @date 2024-04-02
+ * @version 0.4
+ * @date 2024-04-06
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -84,6 +84,18 @@ string FileInfo::md5sumString() const {
     for(int i=0; i<16; ++i)
         ss << setfill('0') << setw(2) << std::hex << (int)md5sum[i];
     return ss.str();
+}
+
+const std::string FileInfo::operator[](std::string idx) const {
+    if(idx == "Name") return this->path.filename();
+    if(idx == "Path") return this->path;
+    if(idx == "Size") return this->size_str();
+    if(idx == "Created") return this->created_str();
+    if(idx == "Modified") return this->modified_str();
+    if(idx == "Accessed") return this->accessed_str();
+    if(idx == "Type") return this->type_str();
+    if(idx == "MD5SUM") return this->md5sumString();
+    return "<null>";
 }
 
 string FileInfo::to_string() const {
