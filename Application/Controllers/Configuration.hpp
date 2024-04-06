@@ -25,12 +25,13 @@ class Configuration {
     std::map<std::string, std::vector<std::string>> organize;
     std::map<std::string, wxImage*> image;
     std::vector<std::string> image_extension;
+    std::vector<std::pair<std::string, std::string>> file_info;
 
     Configuration(const std::string path);
 
    private:
     std::fstream file;
-    std::map<std::string, std::string> ReadKeysValues();
+    std::vector<std::pair<std::string, std::string>> ReadKeysValues();
 };
 
 #endif  // _CONFIGURATION_HPP_
