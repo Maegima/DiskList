@@ -2,53 +2,52 @@
  * @file InfoWindow.cpp
  * @author André Lucas Maegima
  * @brief Information Window class implementation
- * @version 0.3
- * @date 2023-11-20
+ * @version 0.4
+ * @date 2024-04-06
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 #include "InfoWindow.hpp"
 
 InfoWindow::InfoWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)
-    : wxPanel(parent, wxID_ANY, pos, size),
-      grid(CreateGrid()) {
-    Bind(wxEVT_SIZE, &InfoWindow::OnSize, this, wxID_ANY);
+    : wxPanel(parent, wxID_ANY, pos, size) {
+    SetBackgroundColour(*wxWHITE);
+    SetSizer(new wxBoxSizer(wxVERTICAL));
 }
 
-wxGrid* InfoWindow::CreateGrid() {
-    wxGrid* newGrid = new wxGrid(this, wxID_ANY);
-    newGrid->CreateGrid(0, 1);
-    newGrid->SetRowLabelSize(wxGRID_AUTOSIZE);
-    newGrid->EnableDragColSize(false);
-    newGrid->EnableDragRowSize(false);
-    newGrid->EnableEditing(false);
-    newGrid->SetColSize(0, this->m_width - newGrid->GetRowLabelSize());
-    newGrid->HideColLabels();
-    newGrid->SetRowLabelAlignment(wxALIGN_RIGHT, wxALIGN_CENTRE);
-    newGrid->SetLabelFont(wxFont(9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
-    return newGrid;
+wxPanel* InfoWindow::CreateCenteredText(wxString label, wxSize size) {
+    wxPanel* panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, size);
+    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+    auto text = new wxStaticText(panel, wxID_ANY, label);
+    text->SetFont(wxFont(9, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+    int max_text_size = 240;
+    while (text->m_width > 240) {
+        int parts = text->m_width / max_text_size;
+        int size = label.length() / (parts + 1);
+        wxString newstr = "";
+        for (int i = 0; i < parts; i++) {
+            newstr += label.substr(i * size, size) + "\n";
+        }
+        newstr += label.substr(parts * size);
+        text->SetLabel(newstr);
+        max_text_size -= 10;
+    }
+    panel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BACKGROUND));
+    sizer->Add(text, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    panel->SetSizer(sizer);
+    return panel;
 }
 
 void InfoWindow::FillGrid(std::list<std::pair<wxString, wxString>> lines) {
-    if (grid->GetNumberRows() > 0) {
-        grid->DeleteRows(0, grid->GetNumberRows());
+    auto sizer = this->GetSizer();
+    sizer->Clear(true);
+    for (auto const& pair : lines) {
+        wxBoxSizer* line = new wxBoxSizer(wxHORIZONTAL);
+        line->Add(CreateCenteredText(pair.first, wxSize(60, 24)), 0, wxEXPAND | wxTOP | wxRIGHT, 4);
+        line->Add(CreateCenteredText(pair.second), 1, wxEXPAND | wxTOP | wxRIGHT, 4);
+        sizer->Add(line, 0, wxEXPAND | wxLEFT, 4);
     }
-    grid->InsertRows(0, lines.size());
-    int row = 0;
-    for (auto const& line : lines) {
-        grid->SetRowLabelValue(row, line.first);
-        grid->SetCellValue(row, 0, line.second);
-        row++;
-    }
-    grid->SetRowLabelSize(wxGRID_AUTOSIZE);
-    grid->SetColSize(0, this->m_width - grid->GetRowLabelSize());
-}
-
-void InfoWindow::OnSize(wxSizeEvent& event) {
-    auto newSize = this->m_parent->GetClientSize();
-    this->SetSize(250, newSize.y);
-    this->grid->SetSize(this->GetSize());
-    Refresh();
-    event.Skip();
+    this->SendSizeEvent();
+    this->Refresh();
 }

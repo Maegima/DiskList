@@ -189,10 +189,10 @@ void CardPanel::OnFolderLeftClick(wxMouseEvent &event) {
 
 void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
     std::list<std::pair<wxString, wxString>> list;
-    for(const auto &[key, value] : parent->config.file_info){
-        std::string parameter = GetFileValue(value);
+    for(const auto &[key, expression] : parent->config.file_info){
+        std::string value = GetFileValue(expression);
         if(value != "<null>") {
-            list.push_back({key, wxString::FromUTF8(parameter)});
+            list.push_back({key, wxString::FromUTF8(value)});
         }
     }
     parent->iwindow->FillGrid(list);
