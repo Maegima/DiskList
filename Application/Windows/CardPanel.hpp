@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class definition
  * @version 0.4
- * @date 2024-04-04
+ * @date 2024-04-05
  *
  * @copyright Copyright (c) 2024
  *
@@ -53,6 +53,7 @@ class CardPanel : public wxPanel {
     void OnLeftClick(wxMouseEvent& event);
     void OnTextClick(wxMouseEvent& event);
     void SkipMouseEvent(wxMouseEvent &event);
+    void OnCardMenuClick(wxCommandEvent& event);
 
     struct CompareCards {
         bool operator()(const CardPanel* c1, const CardPanel* c2) const;
