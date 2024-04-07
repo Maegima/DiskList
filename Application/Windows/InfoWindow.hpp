@@ -21,7 +21,7 @@ class InfoWindow : public wxPanel {
    public:
     InfoWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size);
 
-    void FillGrid(std::list<std::pair<wxString, wxString>> lines);\
+    void FillGrid(std::list<std::pair<wxString, wxString>> lines);
    private:
     wxPanel* CreateCenteredText(wxString label, wxSize size = wxDefaultSize);
 };
