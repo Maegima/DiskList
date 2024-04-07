@@ -2,29 +2,16 @@
  * @file Configuration.cpp
  * @author André Lucas Maegima
  * @brief Configuration file class implementation
- * @version 0.3
- * @date 2023-12-26
+ * @version 0.4
+ * @date 2024-04-06
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
 #include <iostream>
 #include "Configuration.hpp"
-
-std::vector<std::string> split(const std::string str, char delimiter) {
-    size_t pos = 0;
-    std::string token;
-    std::string s = str;
-    std::vector<std::string> list;
-    while ((pos = s.find(delimiter)) != std::string::npos) {
-        token = s.substr(0, pos);
-        s.erase(0, pos + 1);
-        list.push_back(token);
-    }
-    list.push_back(s);
-    return list;
-}
+#include "Algorithm.hpp"
 
 Configuration::Configuration(const std::string path) : file(std::fstream(path, std::ios::in)) {
     std::string data;
@@ -39,7 +26,9 @@ Configuration::Configuration(const std::string path) : file(std::fstream(path, s
                 std::cout << key << "=" << value << std::endl;
             }
             if (space == "config") {
-                config = items;
+                for (auto &[key, value] : items) {
+                    config.insert({key, value});
+                }
             } else if (space == "folder") {
                 for (auto &[key, value] : items) {
                     size_t pos = value.find("_");
@@ -49,31 +38,33 @@ Configuration::Configuration(const std::string path) : file(std::fstream(path, s
                 }
             } else if (space == "organize") {
                 for (auto &[key, value] : items) {
-                    organize.insert({key, split(value, ',')});
+                    organize.insert({key, Algorithm::split<std::vector>(value, ',')});
                 }
             } else if (space == "image") {
                 for (auto &[key, value] : items) {
                     if(key == "dynamic") {
-                        image_extension = split(value, ',');
+                        image_extension = Algorithm::split<std::vector>(value, ',');
                     } else {
                         image.insert({key, new wxImage(value, wxBITMAP_TYPE_PNG)});
                     }
                 }
+            } else if (space == "fileinfo") {
+                file_info = items;
             }
         }
     }
 }
 
-std::map<std::string, std::string> Configuration::ReadKeysValues() {
+std::vector<std::pair<std::string, std::string>> Configuration::ReadKeysValues() {
     bool end = false;
     std::string data;
-    std::map<std::string, std::string> items;
+    std::vector<std::pair<std::string, std::string>> items;
     while (!end && getline(file, data)) {
         size_t pos = data.find('=');
         if (pos != std::string::npos) {
             std::string key = data.substr(0, pos);
             std::string value = data.substr(pos + 1);
-            items.insert({key, value});
+            items.push_back({key, value});
         }
         end = data.empty();
     }

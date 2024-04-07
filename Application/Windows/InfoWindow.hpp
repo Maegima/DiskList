@@ -3,10 +3,10 @@
  * @file InfoWindow.hpp
  * @author André Lucas Maegima
  * @brief Information Window class definition
- * @version 0.3
- * @date 2023-11-20
+ * @version 0.4
+ * @date 2024-04-06
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -21,14 +21,9 @@ class InfoWindow : public wxPanel {
    public:
     InfoWindow(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size);
 
-    void OnSize(wxSizeEvent& event);
-
     void FillGrid(std::list<std::pair<wxString, wxString>> lines);
-
-    wxGrid* grid;
-
    private:
-    wxGrid* CreateGrid();
+    wxPanel* CreateCenteredText(wxString label, wxSize size = wxDefaultSize);
 };
 
 #endif  // _INFOWINDOW_HPP_

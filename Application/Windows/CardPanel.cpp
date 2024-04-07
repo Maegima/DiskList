@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.4
- * @date 2024-04-05
+ * @date 2024-04-06
  *
  * @copyright Copyright (c) 2024
  *
@@ -11,7 +11,9 @@
 
 #include "CardPanel.hpp"
 #include "ListingWindow.hpp"
+#include "Controllers/Algorithm.hpp"
 #include <wx/utils.h>
+#include <regex>
 
 CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry)
     : wxPanel(parent->lwindow, wxID_ANY),
@@ -99,6 +101,29 @@ std::pair<CardPanel::CardIterator, CardPanel::CardIterator> CardPanel::GetIterat
     return {first, second};
 }
 
+const std::string CardPanel::GetFileValue(const std::string expression) {
+    auto parts = Algorithm::split<std::vector>(expression, ',');
+    std::string value = "";
+    if(parts.size() > 0 && parts[0].size() > 7 && parts[0].substr(0, 6) == "<file." && parts[0].back() == '>') {
+        value = file[parts[0].substr(6, parts[0].size() - 7)];
+    }
+    if(parts.size() > 2) {
+        std::regex re(parts[1], std::regex::egrep);
+        std::string display = parts[2];
+        std::smatch match;
+        std::regex_search(value, match, re);
+        for(size_t i = 0; i < match.size(); i++) {
+            std::string needle = "(" + std::to_string(i) + ")";
+            size_t idx = display.find(needle);
+            if(idx != std::string::npos) {
+                display.replace(idx, needle.size(), match[i].str());
+            }
+        }
+        value = match.empty() ? "<null>" : display;
+    }
+    return value;
+}
+
 void CardPanel::OnLeftClick(wxMouseEvent &event) {
     if (wxGetKeyState(WXK_CONTROL)) {
         SelectItem(!this->selected);
@@ -164,11 +189,12 @@ void CardPanel::OnFolderLeftClick(wxMouseEvent &event) {
 
 void CardPanel::OnFileLeftClick(wxMouseEvent &event) {
     std::list<std::pair<wxString, wxString>> list;
-    list.push_back({"Name", wxString::FromUTF8(file.path.filename().string())});
-    list.push_back({"Size", file.size_str()});
-    list.push_back({"Created", file.created_str()});
-    list.push_back({"Modified", file.modified_str()});
-    list.push_back({"Accessed", file.accessed_str()});
+    for(const auto &[key, expression] : parent->config.file_info){
+        std::string value = GetFileValue(expression);
+        if(value != "<null>") {
+            list.push_back({key, wxString::FromUTF8(value)});
+        }
+    }
     parent->iwindow->FillGrid(list);
 }
 

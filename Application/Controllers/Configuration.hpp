@@ -2,10 +2,10 @@
  * @file Configuration.hpp
  * @author André Lucas Maegima
  * @brief Configuration file class definition
- * @version 0.3
- * @date 2023-12-26
+ * @version 0.4
+ * @date 2024-04-06
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
  */
 
@@ -25,12 +25,13 @@ class Configuration {
     std::map<std::string, std::vector<std::string>> organize;
     std::map<std::string, wxImage*> image;
     std::vector<std::string> image_extension;
+    std::vector<std::pair<std::string, std::string>> file_info;
 
     Configuration(const std::string path);
 
    private:
     std::fstream file;
-    std::map<std::string, std::string> ReadKeysValues();
+    std::vector<std::pair<std::string, std::string>> ReadKeysValues();
 };
 
 #endif  // _CONFIGURATION_HPP_
