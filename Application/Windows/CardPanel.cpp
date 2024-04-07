@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief CardPanel class implementation
  * @version 0.4
- * @date 2024-04-06
+ * @date 2024-04-07
  *
  * @copyright Copyright (c) 2024
  *
@@ -14,6 +14,7 @@
 #include "Controllers/Algorithm.hpp"
 #include <wx/utils.h>
 #include <regex>
+#include <ranges>
 
 CardPanel::CardPanel(ListingWindow *parent, std::filesystem::directory_entry entry)
     : wxPanel(parent->lwindow, wxID_ANY),
@@ -87,14 +88,14 @@ Image *CardPanel::CreateImage(std::filesystem::directory_entry entry) {
 }
 
 std::pair<CardPanel::CardIterator, CardPanel::CardIterator> CardPanel::GetIterators(CardPanel *c1, CardPanel *c2) {
-    CardIterator it = this->parent->cards.begin();
-    CardIterator first = this->parent->cards.end();
-    CardIterator second = this->parent->cards.end();
-    while (it != this->parent->cards.end() && first == this->parent->cards.end()) {
+    CardIterator it = this->parent->file_cards.begin();
+    CardIterator first = this->parent->file_cards.end();
+    CardIterator second = this->parent->file_cards.end();
+    while (it != this->parent->file_cards.end() && first == this->parent->file_cards.end()) {
         CardPanel *card = *(it++);
         if (card == c1 || card == c2) first = it;
     }
-    while (it != this->parent->cards.end() && second == this->parent->cards.end()) {
+    while (it != this->parent->file_cards.end() && second == this->parent->file_cards.end()) {
         CardPanel *card = *(it++);
         if (card == c1 || card == c2) second = it;
     }
@@ -137,10 +138,9 @@ void CardPanel::OnLeftClick(wxMouseEvent &event) {
         }
         SelectItem(true);
     } else {
-        for (auto const &card : this->parent->cards) {
-            if (card->file.type == FileType::File) {
-                card->SelectItem(false, false);
-            }
+        std::vector<std::list<CardPanel*>> cards = {parent->folder_cards, parent->file_cards};
+        for (auto const &card : std::ranges::join_view(cards)) {
+            card->SelectItem(false, false);
         }
         SelectItem(true);
     }

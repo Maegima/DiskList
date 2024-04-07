@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Files listing window
  * @version 0.4
- * @date 2024-04-05
+ * @date 2024-04-07
  *
  * @copyright Copyright (c) 2024
  *
@@ -34,7 +34,8 @@ class ListingWindow : public wxFrame {
     CardPanel* selected_card;
 
     std::filesystem::path current;
-    std::list<CardPanel*> cards;
+    std::list<CardPanel*> folder_cards;
+    std::list<CardPanel*> file_cards;
     std::list<std::string> forward_paths;
     std::map<int, std::filesystem::path> last_folders;
 
@@ -48,7 +49,7 @@ class ListingWindow : public wxFrame {
     wxBitmapButton* CreateBitmapButton(wxWindowID id, std::string name);
     wxBoxSizer* CreateSizer();
     wxButton* CreateBreadCrumbItem(wxString label, bool enabled = true);
-    CardPanel* AddNewCard(std::filesystem::directory_entry entry);
+    CardPanel* CreateCard(std::filesystem::directory_entry entry);
     
     void UpdatePathBreadCrumbs();
     bool ExecuteCardEvent(int eventId, CardPanel* card, const std::filesystem::path path);

@@ -3,7 +3,7 @@
  * @author André Lucas Maegima
  * @brief Listing window implementation
  * @version 0.4
- * @date 2024-04-05
+ * @date 2024-04-07
  *
  * @copyright Copyright (c) 2024
  *
@@ -12,6 +12,7 @@
 #include "wx/wrapsizer.h"
 #include "ListingWindow.hpp"
 #include "Controllers/Algorithm.hpp"
+#include <ranges>
 
 ListingWindow::ListingWindow() : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaultPosition, wxSize(1200, 600)),
     config(".conf"),
@@ -27,6 +28,7 @@ ListingWindow::ListingWindow() : wxFrame(nullptr, wxID_ANY, "Disklist", wxDefaul
     backward->Bind(wxEVT_BUTTON, &ListingWindow::OnBackward, this);
 
     SetSizer(CreateSizer());
+    CreateStatusBar();
 
     ChangePath(config.config["root"]);
 }
@@ -121,25 +123,37 @@ void ListingWindow::RefreshPath(bool reload) {
     this->selected_folders = 0;
     lwindow->SetFocus();
     if (reload) {
-        this->cards.clear();
+        this->file_cards.clear();
+        this->folder_cards.clear();
         for (auto const& entry : std::filesystem::directory_iterator{current}) {
-            AddNewCard(entry);
+            auto card = CreateCard(entry);
+            if(entry.is_directory()) {
+                folder_cards.push_back(card);
+            } else {
+                file_cards.push_back(card);
+            }
         }
-        cards.sort(CardPanel::CompareCards());
+        this->file_cards.sort(CardPanel::CompareCards());
+        this->folder_cards.sort(CardPanel::CompareCards());
     } else {
-        std::erase_if(cards, [](CardPanel* card) {
+        auto remove_cards = [](CardPanel* card) {
             bool result = card->to_remove;
             if (result) delete card;
             return result;
-        });
+        };
+        std::erase_if(file_cards, remove_cards);
+        std::erase_if(folder_cards, remove_cards);
     }
-    for (auto const& card : cards) {
+    for (auto const& card : folder_cards) {
+        sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
+    }
+    for (auto const& card : file_cards) {
         sizer->Add(card, 0, wxLEFT | wxRIGHT | wxTOP | wxBOTTOM, 0);
     }
     if (reload) {
         lwindow->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
     }
-    lwindow->SendSizeEvent();
+    SetStatusText(std::to_string(folder_cards.size()) + " Folders, " + std::to_string(file_cards.size()) + " Files");
     this->SendSizeEvent();
     lwindow->Refresh();
 }
@@ -167,7 +181,8 @@ void ListingWindow::ExecuteMenuEvent(int eventId) {
         eventId = MOVE_TO_FOLDER;
     }
     if (!path.empty()) {
-        for (auto card : this->cards) {
+        std::vector<std::list<CardPanel*>> cards = {folder_cards, file_cards};
+        for (auto const &card : std::ranges::join_view(cards)) {
             if (card->selected) {
                 refresh |= ExecuteCardEvent(eventId, card, path);
             }
@@ -210,18 +225,17 @@ FileSystem::Result ListingWindow::Move(CardPanel* card, std::filesystem::path pa
     auto result = FileSystem::Move(card->file.path, path);
     for (const auto& item : result.created) {
         if (item.parent_path() == current) {
-            AddNewCard(std::filesystem::directory_entry(item));
-            cards.sort(CardPanel::CompareCards());
+            folder_cards.push_back(CreateCard(std::filesystem::directory_entry(item)));
+            folder_cards.sort(CardPanel::CompareCards());
         }
     }
     card->to_remove = result;
     return result;
 }
 
-CardPanel* ListingWindow::AddNewCard(std::filesystem::directory_entry entry) {
+CardPanel* ListingWindow::CreateCard(std::filesystem::directory_entry entry) {
     auto card = new CardPanel(this, entry);
     card->Bind(wxEVT_RIGHT_DOWN, &ListingWindow::OnFolderRightClick, this, wxID_ANY);
-    cards.push_back(card);
     return card;
 }
 
@@ -287,10 +301,8 @@ void ListingWindow::OnKeyPress(wxKeyEvent& event) {
                 ExecuteMenuEvent(event_first + uc - '1');
                 break;
             case 'A':
-                for (auto const& card : cards) {
-                    if (card->file.type == FileType::File) {
-                        card->SelectItem(true);
-                    }
+                for (auto const& card : file_cards) {
+                    card->SelectItem(true);
                 }
                 break;
         }
