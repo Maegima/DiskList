@@ -153,9 +153,20 @@ void ListingWindow::RefreshPath(bool reload) {
     if (reload) {
         lwindow->SetScrollbars(0, 40, 0, sizer->GetSize().GetHeight() / 40);
     }
-    SetStatusText(std::to_string(folder_cards.size()) + " Folders, " + std::to_string(file_cards.size()) + " Files");
+    RefreshStatusText();
     this->SendSizeEvent();
     lwindow->Refresh();
+}
+
+void ListingWindow::RefreshStatusText() {
+    std::string text = std::to_string(folder_cards.size()) + " Folders, " + std::to_string(file_cards.size()) + " Files";
+    for(auto &[id, folder] : last_folders) {
+        if(!folder.empty()) {
+            std::string key = "F" + std::to_string(id - MOVE_TO_FOLDER + 5);
+            text += " | " + key + " " + folder.filename().string();
+        }
+    }
+    SetStatusText(wxString::FromUTF8(text));
 }
 
 void ListingWindow::ExecuteMenuEvent(int eventId) {
@@ -316,7 +327,7 @@ void ListingWindow::OnKeyPress(wxKeyEvent& event) {
                 break;
         }
     }
-    if (uc >= WXK_F6 || uc <= WXK_F7) {
+    if (uc >= WXK_F6 && uc <= WXK_F8) {
         ExecuteMenuEvent(MOVE_TO_FOLDER + 1 + uc - WXK_F6);
     }
     event.Skip();

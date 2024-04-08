@@ -54,6 +54,7 @@ class ListingWindow : public wxFrame {
     void UpdatePathBreadCrumbs();
     bool ExecuteCardEvent(int eventId, CardPanel* card, const std::filesystem::path path);
     void RefreshPath(bool reload = true);
+    void RefreshStatusText();
     FileSystem::Result Move(CardPanel* card, std::filesystem::path path);
 
     void OnSize(wxSizeEvent& event);
